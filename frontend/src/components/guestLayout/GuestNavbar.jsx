@@ -66,17 +66,20 @@ const GuestNavbar = () => {
               <Nav.Link href="/home" className="nav-link-custom">
                 Home
               </Nav.Link>
-
-              <Nav.Link href="/features" className="nav-link-custom">
-                Features
+              <Nav.Link href="/aboutus" className="nav-link-custom">
+                AboutUs
               </Nav.Link>
 
-              <Nav.Link href="#how" className="nav-link-custom">
-                How It Works
+              <Nav.Link href="/services" className="nav-link-custom">
+                Services
               </Nav.Link>
 
-              <Nav.Link href="/contact" className="nav-link-custom">
-                Contact
+              <Nav.Link href="/register" className="nav-link-custom">
+                Register
+              </Nav.Link>
+
+              <Nav.Link href="/login" className="nav-link-custom">
+                Login
               </Nav.Link>
 
             </Nav>
