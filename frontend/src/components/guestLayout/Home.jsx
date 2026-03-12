@@ -9,6 +9,7 @@ import {
   FaBell,
   FaMobileAlt
 } from "react-icons/fa";
+import logo from "/SafeGesture/frontend/src/assets/logo.png";
 
 
 const Home = () => {
@@ -53,22 +54,26 @@ const Home = () => {
         {`
 
        .hero-section{
-min-height:100vh;
-display:flex;
-align-items:center;
-padding-top:100px;
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
-}
+          min-height:100vh;
+          display:flex;
+          align-items:center;
+          padding-top:100px;
+          background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+          color:white;
+        }
         .hero-title{
-          font-size:55px;
+          font-size:50px;
           font-weight:bold;
+          margin-left:20px;
+          overflow:hidden;
+          margin-bottom:20px;
         }
 
         .hero-subtitle{
           font-size:20px;
           opacity:0.9;
           margin-top:20px;
+          margin-left:20px;
         }
 
         .cta-button{
@@ -78,6 +83,8 @@ color:white;
           border-radius:30px;
           background:#ff6a00;
           border:none;
+         
+          margin-left:20px;
         }
 
         .cta-button:hover{
@@ -154,41 +161,42 @@ color:white;
               >
 
                 <h1 className="hero-title">
-                  SafeGesture AI Women Safety System
+                <span style={{fontSize: "60px"}}>SafeGesture </span>AI Women Safety System
                 </h1>
 
+               
                 <p className="hero-subtitle">
                   Draw a Z gesture on your mobile to send instant emergency
                   alerts, live location, and video evidence to nearby police.
                 </p>
 
                <Button
-  className="cta-button"
-  onClick={() =>
-    window.scrollTo({
-      top: document.body.scrollHeight,
-      behavior: "smooth"
-    })
-  }
->
-  Get Started
-</Button>
+                  className="cta-button"
+                  onClick={() =>
+                  window.scrollTo({
+                  top: document.body.scrollHeight,
+                  behavior: "smooth"
+                  })
+                  }
+                >
+                Get Started
+                </Button>
+
               </motion.div>
+          </Col>
 
-            </Col>
+          <Col md={6}>
+          <motion.img
+            initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ duration: 0.8 }}
+            whileHover={{ scale: 1.05 }}
+            src={logo}
+            alt="Women Safety Logo"
+            style={{ width: "100%", maxWidth: "350px", margin:"0px 0px 100px 0px" }}
+          />
 
-            <Col md={6}>
-
-              <motion.img
-                initial={{opacity:0,scale:0.8}}
-                animate={{opacity:1,scale:1}}
-                transition={{duration:0.8}}
-                src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png"
-                alt="Safety Illustration"
-                style={{width:"100%"}}
-              />
-
-            </Col>
+          </Col>
 
           </Row>
 
