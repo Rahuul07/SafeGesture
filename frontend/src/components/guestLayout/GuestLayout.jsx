@@ -8,7 +8,7 @@ const GuestLayout = () => {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg,#0ea5e9,#0284c7,#0369a1)"
+       
       }}
     >
       <GuestHeader />

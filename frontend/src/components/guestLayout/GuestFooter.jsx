@@ -8,7 +8,7 @@ const GuestFooter1 = () => {
         background: "#212529",
         color: "white",
         padding: "20px",
-        marginTop: "60px"
+        marginTop: "0px"
       }}
     >
       <Container className="text-center">

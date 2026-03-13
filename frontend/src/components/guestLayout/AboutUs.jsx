@@ -2,7 +2,6 @@ import React from "react";
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { motion } from "framer-motion";
 import {
-
 FaMapMarkedAlt,
 FaMobileAlt,
 FaVideo,
@@ -41,6 +40,23 @@ return(
 <>
 
 <style>{`
+
+/* ===== ADDED BACKGROUND WRAPPER ===== */
+
+.about-page{
+min-height:100vh;
+background: linear-gradient(135deg,#0ea5e9,#0284c7,#0369a1);
+background-size:300% 300%;
+animation:gradientMove 14s ease infinite;
+}
+
+@keyframes gradientMove{
+0%{background-position:0% 50%}
+50%{background-position:100% 50%}
+100%{background-position:0% 50%}
+}
+
+/* ===== YOUR ORIGINAL STYLES (UNCHANGED) ===== */
 
 .hero{
 min-height:100vh;
@@ -85,6 +101,51 @@ margin:auto;
 filter:drop-shadow(0px 20px 40px rgba(0,0,0,0.25));
 }
 
+/* ---------- PHONE WRAPPER ---------- */
+
+.phone-wrapper{
+position:relative;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+/* ---------- FINGERPRINT SCANNER ---------- */
+
+.fingerprint-scan{
+position:absolute;
+width:120px;
+height:120px;
+border-radius:50%;
+border:3px solid #38bdf8;
+box-shadow:
+0 0 10px #38bdf8,
+0 0 20px #38bdf8,
+0 0 40px #38bdf8;
+animation:scanPulse 2s infinite ease-in-out;
+}
+
+/* SCAN ANIMATION */
+
+@keyframes scanPulse{
+
+0%{
+transform:scale(0.8);
+opacity:0.6;
+}
+
+50%{
+transform:scale(1.1);
+opacity:1;
+}
+
+100%{
+transform:scale(0.8);
+opacity:0.6;
+}
+
+}
+
 .floating{
 position:absolute;
 border-radius:50%;
@@ -124,7 +185,6 @@ right:30%;
 .features{
 padding:100px 0;
 background:transparent;
-
 }
 
 .features h2{
@@ -162,6 +222,7 @@ padding:90px 0;
 text-align:center;
 color:white;
 }
+
 .stat{
 font-size:50px;
 font-weight:bold;
@@ -170,7 +231,6 @@ color:white;
 
 .stats p{
 font-size:25px;
-
 }
 
 /* WORKFLOW */
@@ -181,6 +241,7 @@ background:transparent;
 text-align:center;
 color:white;
 }
+
 .workflow h2{
 font-size:50px;
 font-weight:700;
@@ -198,7 +259,6 @@ color:white;
 
 .step p{
 font-size:20px;
-;
 }
 
 /* CTA */
@@ -241,6 +301,9 @@ margin:30px auto;
 
 `}</style>
 
+{/* ===== ADDED PAGE WRAPPER ===== */}
+
+<div className="about-page">
 
 {/* HERO SECTION */}
 
@@ -278,7 +341,6 @@ onClick={() =>
 document.getElementById("cta").scrollIntoView({
 behavior: "smooth"
 })
-
 }
 >
 Start Protecting Yourself
@@ -290,15 +352,22 @@ Start Protecting Yourself
 
 <Col lg={6} md={12}>
 
+<div className="phone-wrapper">
+
 <motion.img
 src={safetyImg}
 className="hero-img"
-initial={{scale:0.8,opacity:0}}
-animate={{scale:1,opacity:1}}
+initial={{scale:0.8,opacity:0,y:30}}
+animate={{scale:1,opacity:1,y:0}}
 transition={{duration:1}}
 whileHover={{scale:1.05}}
 alt="Women Safety Illustration"
 />
+
+<div className="fingerprint-scan"></div>
+
+</div>
+
 </Col>
 
 </Row>
@@ -306,7 +375,6 @@ alt="Women Safety Illustration"
 </Container>
 
 </div>
-
 
 {/* FEATURES */}
 
@@ -348,7 +416,6 @@ whileTap={{scale:0.95}}
 </Container>
 
 </div>
-
 
 {/* STATS */}
 
@@ -400,7 +467,6 @@ viewport={{once:true}}
 
 </div>
 
-
 {/* WORKFLOW */}
 
 <div className="workflow">
@@ -439,7 +505,6 @@ How SafeGesture Works
 
 </div>
 
-
 {/* CTA */}
 
 <div className="cta" id="cta">
@@ -469,6 +534,8 @@ Create Free Account
 </motion.div>
 
 </Container>
+
+</div>
 
 </div>
 
