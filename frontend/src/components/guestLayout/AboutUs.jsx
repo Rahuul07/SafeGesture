@@ -8,9 +8,11 @@ FaMobileAlt,
 FaVideo,
 FaBell
 } from "react-icons/fa";
-import safetyImg from "/SafeGesture/frontend/src/assets/safety.png";  
+import safetyImg from "/SafeGesture/frontend/src/assets/safetyImg.png";
+import { useNavigate } from "react-router-dom";
 
 const AboutUs = () => {
+const navigate = useNavigate();
 
 const features = [
 {
@@ -44,7 +46,7 @@ return(
 min-height:100vh;
 display:flex;
 align-items:center;
-background:linear-gradient(135deg,#0ea5e9,#0284c7,#0369a1);
+background:transparent;
 position:relative;
 overflow:hidden;
 color:white;
@@ -76,7 +78,7 @@ transform:scale(1.08);
 }
 
 .hero-img{
-max-width:520px;
+max-width:420px;
 width:100%;
 display:block;
 margin:auto;
@@ -121,7 +123,14 @@ right:30%;
 
 .features{
 padding:100px 0;
-background:#f0f9ff;
+background:transparent;
+
+}
+
+.features h2{
+color:white;
+font-weight:700;
+font-size:50px;
 }
 
 .feature-card{
@@ -148,23 +157,33 @@ margin-bottom:15px;
 /* STATS */
 
 .stats{
-background:#e0f2fe;
+background:transparent;
 padding:90px 0;
 text-align:center;
+color:white;
 }
-
 .stat{
 font-size:50px;
 font-weight:bold;
-color:#0284c7;
+color:white;
+}
+
+.stats p{
+font-size:25px;
+
 }
 
 /* WORKFLOW */
 
 .workflow{
 padding:90px 0;
-background:#f8fafc;
+background:transparent;
 text-align:center;
+color:white;
+}
+.workflow h2{
+font-size:50px;
+font-weight:700;
 }
 
 .step{
@@ -174,7 +193,12 @@ padding:25px;
 .step-number{
 font-size:42px;
 font-weight:bold;
-color:#0284c7;
+color:white;
+}
+
+.step p{
+font-size:20px;
+;
 }
 
 /* CTA */
@@ -182,8 +206,17 @@ color:#0284c7;
 .cta{
 padding:100px 0;
 text-align:center;
-background:linear-gradient(135deg,#0284c7,#0ea5e9);
+background:transparent;
 color:white;
+}
+
+.cta h2{
+font-size:42px;
+font-weight:700;
+}
+
+.cta p{
+font-size:28px;
 }
 
 /* RESPONSIVE */
@@ -239,7 +272,15 @@ that activates instantly through gesture detection,
 sending live location and evidence to authorities.
 </p>
 
-<Button className="hero-btn">
+<Button
+className="hero-btn"
+onClick={() =>
+document.getElementById("cta").scrollIntoView({
+behavior: "smooth"
+})
+
+}
+>
 Start Protecting Yourself
 </Button>
 
@@ -248,6 +289,7 @@ Start Protecting Yourself
 </Col>
 
 <Col lg={6} md={12}>
+
 <motion.img
 src={safetyImg}
 className="hero-img"
@@ -257,7 +299,6 @@ transition={{duration:1}}
 whileHover={{scale:1.05}}
 alt="Women Safety Illustration"
 />
-
 </Col>
 
 </Row>
@@ -273,7 +314,7 @@ alt="Women Safety Illustration"
 
 <Container>
 
-<h2 className="text-center mb-5">
+<h2 className="text-center mb-5 ">
 Advanced Safety Technologies
 </h2>
 
@@ -401,7 +442,7 @@ How SafeGesture Works
 
 {/* CTA */}
 
-<div className="cta">
+<div className="cta" id="cta">
 
 <Container>
 
@@ -418,7 +459,10 @@ viewport={{once:true}}
 Experience a smarter and safer future with AI powered protection.
 </p>
 
-<Button className="hero-btn">
+<Button
+className="hero-btn"
+onClick={() => navigate("/register")}
+>
 Create Free Account
 </Button>
 
