@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -6,10 +9,23 @@ import nodemailer from "nodemailer";
 
 // EMAIL TRANSPORTER
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+transporter.verify(function (error, success) {
+  if (error) {
+    console.log("Email server error:", error);
+  } else {
+    console.log("Email server is ready to send messages");
   }
 });
 
@@ -92,7 +108,11 @@ export const registerUser = async (req, res) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
+  
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log("Email sent:", info.response);
 
 
     res.status(201).json({

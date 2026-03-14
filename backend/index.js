@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotenv";
+
 import http from "http";
 import { Server } from "socket.io";
 import rateLimit from "express-rate-limit";
@@ -16,7 +19,7 @@ import evidenceRoutes from "./routes/evidenceRoutes.js";
 import { setSocket } from "./controllers/alertController.js";
 import { setLocationSocket } from "./controllers/locationController.js";
 
-dotenv.config();
+
 
 const app = express();
 
