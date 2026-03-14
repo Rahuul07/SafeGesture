@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
+import React, { useEffect, useState, useCallback } from "react";
+import { Container, Row, Col, Card } from "react-bootstrap";
 import { motion } from "framer-motion";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -15,17 +15,10 @@ import { useNavigate } from "react-router-dom";
 const UserDashboard = () => {
 
 const navigate = useNavigate();
-
 const [user,setUser] = useState(null);
-
 const token = localStorage.getItem("token");
 
-useEffect(()=>{
-fetchUserProfile();
-},[]);
-
-
-const fetchUserProfile = async ()=>{
+const fetchUserProfile = useCallback(async ()=>{
 
 try{
 
@@ -40,12 +33,15 @@ Authorization:`Bearer ${token}`
 
 setUser(res.data);
 
-}catch(error){
-console.log(error);
+}catch(err){
+console.log(err);
 }
 
-};
+},[token]);
 
+useEffect(()=>{
+fetchUserProfile();
+},[fetchUserProfile]);
 
 const sendSOS = async ()=>{
 
@@ -79,8 +75,8 @@ text:"Unable to send alert"
 
 };
 
-
 return(
+
 <>
 
 <style>{`
@@ -90,7 +86,7 @@ padding:20px;
 color:white;
 }
 
-/* PROFILE CARD */
+/* PROFILE */
 
 .profile-card{
 background:rgba(255,255,255,0.1);
@@ -100,6 +96,35 @@ border-radius:20px;
 padding:20px;
 text-align:center;
 box-shadow:0 10px 30px rgba(0,0,0,0.4);
+margin-bottom:25px;
+}
+
+/* SOS BUTTON */
+
+.sos-wrapper{
+display:flex;
+justify-content:center;
+align-items:center;
+margin:30px 0;
+}
+
+.sos-btn{
+width:140px;
+height:140px;
+border-radius:50%;
+background:radial-gradient(circle,#ff4d4d,#990000);
+border:none;
+color:white;
+font-size:24px;
+font-weight:bold;
+box-shadow:0 0 25px rgba(255,0,0,0.6);
+animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+0%{transform:scale(1)}
+50%{transform:scale(1.08)}
+100%{transform:scale(1)}
 }
 
 /* ACTION CARDS */
@@ -127,34 +152,13 @@ font-size:30px;
 margin-bottom:10px;
 }
 
-/* SOS BUTTON */
-
-.sos-btn{
-width:120px;
-height:120px;
-border-radius:50%;
-background:radial-gradient(circle,#ff4d4d,#b30000);
-border:none;
-color:white;
-font-size:22px;
-font-weight:bold;
-margin-top:15px;
-animation:pulse 1.5s infinite;
-}
-
-@keyframes pulse{
-0%{transform:scale(1);}
-50%{transform:scale(1.08);}
-100%{transform:scale(1);}
-}
-
 /* MOBILE */
 
 @media(max-width:768px){
 
 .sos-btn{
-width:100px;
-height:100px;
+width:110px;
+height:110px;
 font-size:18px;
 }
 
@@ -162,22 +166,17 @@ font-size:18px;
 
 `}</style>
 
-
 <div className="dashboard">
 
 <Container>
 
-{/* PROFILE */}
-
-<Row className="mb-4">
-
-<Col md={12}>
+{/* USER PROFILE */}
 
 <Card className="profile-card">
 
 <h4><FaUser/> User Profile</h4>
 
-{user && (
+{user ? (
 
 <div>
 
@@ -187,20 +186,17 @@ font-size:18px;
 
 </div>
 
+) : (
+
+<p>Loading user profile...</p>
+
 )}
 
 </Card>
 
-</Col>
-
-</Row>
-
-
 {/* SOS BUTTON */}
 
-<Row className="mb-5 text-center">
-
-<Col>
+<div className="sos-wrapper">
 
 <motion.button
 className="sos-btn"
@@ -212,24 +208,19 @@ SOS
 
 </motion.button>
 
-</Col>
+</div>
 
-</Row>
-
-
-{/* QUICK ACTIONS */}
+{/* ACTION PANELS */}
 
 <Row>
 
 <Col md={3} sm={6} className="mb-4">
 
-<motion.div
-whileHover={{scale:1.05}}
->
+<motion.div whileHover={{scale:1.05}}>
 
 <Card
 className="action-card"
-onClick={()=>navigate("/gesture-sos")}
+onClick={()=>navigate("/user-dashboard/gesture-sos")}
 >
 
 <div className="card-icon">
@@ -244,14 +235,13 @@ onClick={()=>navigate("/gesture-sos")}
 
 </Col>
 
-
 <Col md={3} sm={6} className="mb-4">
 
 <motion.div whileHover={{scale:1.05}}>
 
 <Card
 className="action-card"
-onClick={()=>navigate("/live-tracking")}
+onClick={()=>navigate("/user-dashboard/live-tracking")}
 >
 
 <div className="card-icon">
@@ -266,14 +256,13 @@ onClick={()=>navigate("/live-tracking")}
 
 </Col>
 
-
 <Col md={3} sm={6} className="mb-4">
 
 <motion.div whileHover={{scale:1.05}}>
 
 <Card
 className="action-card"
-onClick={()=>navigate("/emergency-contact")}
+onClick={()=>navigate("/user-dashboard/emergency-contact")}
 >
 
 <div className="card-icon">
@@ -288,14 +277,13 @@ onClick={()=>navigate("/emergency-contact")}
 
 </Col>
 
-
 <Col md={3} sm={6} className="mb-4">
 
 <motion.div whileHover={{scale:1.05}}>
 
 <Card
 className="action-card"
-onClick={()=>navigate("/evidence-upload")}
+onClick={()=>navigate("/user-dashboard/evidence-upload")}
 >
 
 <div className="card-icon">
@@ -317,6 +305,7 @@ onClick={()=>navigate("/evidence-upload")}
 </div>
 
 </>
+
 );
 
 };

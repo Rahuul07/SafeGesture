@@ -38,7 +38,6 @@ padding:20px;
 }
 
 `}</style>
-
 </div>
 
 );
