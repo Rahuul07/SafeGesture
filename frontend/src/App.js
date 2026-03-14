@@ -9,6 +9,7 @@ import Login from "./components/guestLayout/Login";
 import Register from "./components/guestLayout/Register";
 import GuestLayout from "./components/guestLayout/GuestLayout";
 import { Route, Routes } from "react-router-dom";
+import UserLayout from "./components/userLayout/UserLayout";
 
 function App(){
 
@@ -27,6 +28,12 @@ function App(){
     <Route path="/register" element={<Register/>}/>
     </Route>
 
+     <Route path="/user-dashboard" element={<UserLayout/>}>
+{/* <Route path="/gesture-sos" element={<GestureSOS />} />
+<Route path="/live-tracking" element={<LiveTracking />} />
+<Route path="/emergency-contact" element={<EmergencyContact />} />
+<Route path="/evidence-upload" element={<EvidenceUpload />} /> */}
+</Route>
    </Routes>
 
  

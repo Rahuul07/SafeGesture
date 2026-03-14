@@ -1,17 +1,14 @@
 import React, { useState } from "react";
-import { Container, Row, Col, Form, Button, Card, Toast } from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Register = () => {
 
 const navigate = useNavigate();
-
-const [toastMsg,setToastMsg] = useState("");
-const [toastColor,setToastColor] = useState("success");
-const [showToast,setShowToast] = useState(false);
 
 const [formData,setFormData] = useState({
 name:"",
@@ -28,9 +25,23 @@ setFormData({
 };
 
 const showPopup = (msg,color="success")=>{
-setToastMsg(msg);
-setToastColor(color);
-setShowToast(true);
+
+Swal.fire({
+  icon: color === "success" ? "success" : "error",
+  title: msg,
+  showConfirmButton: true,
+  confirmButtonColor: "#ff7a18",
+  background: "#1f2937",
+  color: "white",
+  backdrop: `rgba(0,0,0,0.7)`,
+  showClass: {
+    popup: "animate__animated animate__zoomIn"
+  },
+  hideClass: {
+    popup: "animate__animated animate__zoomOut"
+  }
+});
+
 };
 
 const handleSubmit = async (e)=>{
@@ -61,24 +72,6 @@ showPopup("Email already exists","danger");
 
 return(
 <>
-
-{/* POPUP MESSAGE */}
-
-<div style={{position:"fixed",top:"20px",right:"20px",zIndex:9999}}>
-<Toast
-show={showToast}
-onClose={()=>setShowToast(false)}
-delay={2500}
-autohide
-bg={toastColor}
->
-<Toast.Body style={{color:"white"}}>
-{toastMsg}
-</Toast.Body>
-</Toast>
-</div>
-
-{/* ===== YOUR ORIGINAL PAGE CODE BELOW (UNCHANGED) ===== */}
 
 <style>{`
 
