@@ -1,6 +1,17 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+
+
+// EMAIL TRANSPORTER
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
 
 const generateToken = (id) => {
@@ -29,12 +40,60 @@ export const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    await User.create({
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
       phone
     });
+
+
+    // SEND WELCOME EMAIL
+    const mailOptions = {
+      from: `"SafeGesture AI" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Welcome to SafeGesture AI 🛡️",
+      html: `
+      <div style="font-family:Arial;padding:20px">
+      
+      <h2>Welcome ${name} 👋</h2>
+      
+      <p>
+      Your account has been successfully created in 
+      <b>SafeGesture AI Women Safety System</b>.
+      </p>
+
+      <p>
+      SafeGesture helps protect users using gesture-based SOS alerts
+      and intelligent safety monitoring.
+      </p>
+
+      <h3>Platform Features</h3>
+
+      <ul>
+      <li>🛡️ Gesture-based SOS trigger</li>
+      <li>📍 Live location tracking</li>
+      <li>📹 Automatic evidence recording</li>
+      <li>🚓 Instant police alerts</li>
+      </ul>
+
+      <p>
+      You can now login and start using the platform.
+      </p>
+
+      <br/>
+
+      <p>
+      Stay safe,<br/>
+      <b>SafeGesture AI Team</b>
+      </p>
+
+      </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
 
     res.status(201).json({
       message: "User registered successfully"

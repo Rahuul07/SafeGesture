@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
+import { Container, Row, Col, Form, Button, Card, Toast } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import axios from "axios";
@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 const Login = () => {
 
 const navigate = useNavigate();
+
+const [toastMsg,setToastMsg] = useState("");
+const [toastColor,setToastColor] = useState("success");
+const [showToast,setShowToast] = useState(false);
 
 const [formData,setFormData] = useState({
 email:"",
@@ -19,6 +23,12 @@ setFormData({
 ...formData,
 [e.target.name]:e.target.value
 });
+};
+
+const showPopup = (msg,color="success")=>{
+setToastMsg(msg);
+setToastColor(color);
+setShowToast(true);
 };
 
 const handleSubmit = async (e)=>{
@@ -33,13 +43,20 @@ formData
 
 localStorage.setItem("token",res.data.token);
 
-alert("Login Successful");
+showPopup("Login Successful ✅","success");
 
+setTimeout(()=>{
 navigate("/user-dashboard");
+},2000);
 
 }catch(error){
 
-alert("Invalid Email or Password");
+if(error.response?.data?.message){
+showPopup(error.response.data.message,"danger");
+}
+else{
+showPopup("Invalid Email or Password","danger");
+}
 
 }
 
@@ -47,6 +64,24 @@ alert("Invalid Email or Password");
 
 return(
 <>
+
+{/* POPUP */}
+
+<div style={{position:"fixed",top:"20px",right:"20px",zIndex:9999}}>
+<Toast
+show={showToast}
+onClose={()=>setShowToast(false)}
+delay={2500}
+autohide
+bg={toastColor}
+>
+<Toast.Body style={{color:"white"}}>
+{toastMsg}
+</Toast.Body>
+</Toast>
+</div>
+
+{/* ===== YOUR ORIGINAL PAGE CODE BELOW (UNCHANGED) ===== */}
 
 <style>{`
 
@@ -66,8 +101,6 @@ animation:gradientMove 12s ease infinite;
 100%{background-position:0% 50%}
 }
 
-/* floating bubbles */
-
 .bubble{
 position:absolute;
 border-radius:50%;
@@ -85,8 +118,6 @@ animation:float 7s infinite ease-in-out;
 100%{transform:translateY(0)}
 }
 
-/* card */
-
 .login-card{
 background:rgba(255,255,255,0.1);
 backdrop-filter:blur(15px);
@@ -96,8 +127,6 @@ padding:40px;
 color:white;
 box-shadow:0 20px 50px rgba(0,0,0,0.4);
 }
-
-/* inputs */
 
 .form-control{
 background:rgba(255,255,255,0.15);
@@ -114,8 +143,6 @@ background:rgba(255,255,255,0.2);
 color:white;
 }
 
-/* button */
-
 .login-btn{
 margin-top:15px;
 background:linear-gradient(45deg,#ff7a18,#ffd200);
@@ -130,6 +157,8 @@ transform:scale(1.05);
 }
 
 `}</style>
+
+{/* YOUR ORIGINAL UI CONTINUES BELOW */}
 
 <div className="login-page">
 
@@ -158,11 +187,9 @@ Login to SafeGesture
 <Form onSubmit={handleSubmit}>
 
 <Form.Group className="mb-3">
-
 <Form.Label>
 <FaEnvelope/> Email
 </Form.Label>
-
 <Form.Control
 type="email"
 placeholder="Enter your email"
@@ -171,15 +198,12 @@ value={formData.email}
 onChange={handleChange}
 required
 />
-
 </Form.Group>
 
 <Form.Group className="mb-3">
-
 <Form.Label>
 <FaLock/> Password
 </Form.Label>
-
 <Form.Control
 type="password"
 placeholder="Enter password"
@@ -188,33 +212,25 @@ value={formData.password}
 onChange={handleChange}
 required
 />
-
 </Form.Group>
 
 <Button
 type="submit"
 className="w-100 login-btn"
 >
-
 Login
-
 </Button>
 
 </Form>
 
 <p className="text-center mt-3">
-
 Don't have an account?{" "}
-
 <span
 style={{cursor:"pointer",color:"#ffd200"}}
 onClick={()=>navigate("/register")}
 >
-
 Register
-
 </span>
-
 </p>
 
 </Card>
