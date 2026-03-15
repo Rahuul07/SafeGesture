@@ -1,6 +1,5 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import UserHeader from "./UserHeader";
 import UserNavbar from "./UserNavbar";
 import UserFooter from "./UserFooter";
 
@@ -10,7 +9,7 @@ return (
 
 <div className="user-layout">
 
-<UserHeader />
+
 
 <UserNavbar />
 
@@ -34,7 +33,7 @@ color:white;
 
 .user-content{
 flex:1;
-padding:20px;
+padding:0px;
 }
 
 `}</style>

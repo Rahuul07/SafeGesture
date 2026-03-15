@@ -4,11 +4,11 @@ import { motion } from "framer-motion";
 import {
 FaBars,
 FaTimes,
-FaHome,
 FaHandPaper,
 FaMapMarkedAlt,
 FaAddressBook,
-FaVideo
+FaVideo,
+FaUser
 } from "react-icons/fa";
 
 const UserNavbar = () => {
@@ -45,11 +45,8 @@ animate={menuOpen ? {height:"auto",opacity:1} : {height:0,opacity:0}}
 transition={{duration:0.4}}
 >
 
-<NavLink to="/user-dashboard" onClick={()=>setMenuOpen(false)}>
-<FaHome/> Dashboard
-</NavLink>
 
-<NavLink to="/gesture-sos" onClick={()=>setMenuOpen(false)}>
+<NavLink to="/user/gesture-sos" onClick={()=>setMenuOpen(false)}>
 <FaHandPaper/> Gesture SOS
 </NavLink>
 
@@ -64,6 +61,11 @@ transition={{duration:0.4}}
 <NavLink to="/evidence-upload" onClick={()=>setMenuOpen(false)}>
 <FaVideo/> Evidence Upload
 </NavLink>
+
+<NavLink to="/user/profile" onClick={()=>setMenuOpen(false)}>
+<FaUser/> Profile
+</NavLink>
+
 
 </motion.div>
 

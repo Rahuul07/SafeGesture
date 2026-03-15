@@ -57,7 +57,7 @@ localStorage.setItem("token",res.data.token);
 showPopup("Login Successful ✅","success");
 
 setTimeout(()=>{
-navigate("/user-dashboard");
+navigate("/user/dashboard");
 },2000);
 
 }catch(error){

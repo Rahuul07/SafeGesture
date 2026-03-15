@@ -8,7 +8,7 @@ import Register from "./components/guestLayout/Register";
 import GuestLayout from "./components/guestLayout/GuestLayout";
 import UserLayout from "./components/userLayout/UserLayout";
 
-import UserDashboard from "./components/userLayout/UserDashboard";
+
 
 // import LiveTracking from "./components/userLayout/LiveTracking";
 // import EmergencyContact from "./components/userLayout/EmergencyContact";
@@ -16,6 +16,8 @@ import UserDashboard from "./components/userLayout/UserDashboard";
 
 import { Route, Routes } from "react-router-dom";
 import GestureSOS from "./components/userLayout/GestureSOS";
+import UserDashboard from "./components/userLayout/UserDashboard";
+import UserProfile from "./components/userLayout/UserProfile";
 
 function App(){
 
@@ -40,14 +42,15 @@ function App(){
 
 {/* ---------------- USER AREA ---------------- */}
 
-<Route path="/user-dashboard" element={<UserLayout/>}>
-
-<Route index element={<UserDashboard/>}/>
-
- <Route path="gesture-sos" element={<GestureSOS/>}/>
+<Route path="/" element={<UserLayout/>}>
+<Route element ={<UserDashboard/>}/>
+<Route path ="/user/dashboard" element={<UserDashboard/>}/>
+ <Route path="/user/gesture-sos" element={<GestureSOS/>}/>
+ <Route path ="/user/profile" element={<UserProfile/>}/> 
 {/* //<Route path="live-tracking" element={<LiveTracking/>}/>
 //<Route path="emergency-contact" element={<EmergencyContact/>}/>
-//<Route path="evidence-upload" element={<EvidenceUpload/>}/>  */}
+//<Route path="evidence-upload" element={<EvidenceUpload/>}/>
+ */}
 
 </Route>
 
