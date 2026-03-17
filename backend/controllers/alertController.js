@@ -8,41 +8,78 @@ export const setSocket = (socketIo) => {
 };
 
 
+// ===============================
 // CREATE SOS ALERT
+// ===============================
+
 export const createAlert = async (req, res) => {
   try {
 
     const { latitude, longitude } = req.body;
 
+    // ✅ VALIDATION
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        message: "Location is required"
+      });
+    }
+
+    // ✅ PREVENT SPAM (cooldown 10 sec)
+    const lastAlert = await Alert.findOne({ userId: req.user._id })
+      .sort({ createdAt: -1 });
+
+    if (lastAlert) {
+      const diff = Date.now() - new Date(lastAlert.createdAt).getTime();
+
+      if (diff < 10000) {
+        return res.status(429).json({
+          message: "Please wait before triggering SOS again"
+        });
+      }
+    }
+
+    // ✅ CREATE ALERT
     const alert = await Alert.create({
       userId: req.user._id,
       location: {
         latitude,
         longitude
-      }
+      },
+      status: "ACTIVE"
     });
 
-    // EMIT REALTIME EVENT
+    // ✅ EMIT REALTIME EVENT (structured)
     if (io) {
-      io.emit("newAlert", alert);
+      io.emit("newAlert", {
+        _id: alert._id,
+        userId: alert.userId,
+        location: alert.location,
+        status: alert.status,
+        createdAt: alert.createdAt
+      });
     }
 
     res.status(201).json({
-      message: "SOS Alert Triggered",
+      message: "SOS Alert Triggered Successfully 🚨",
       alert
     });
 
   } catch (error) {
 
+    console.error("SOS ERROR:", error);
+
     res.status(500).json({
-      message: error.message
+      message: "Failed to trigger SOS"
     });
 
   }
 };
 
 
+// ===============================
 // GET ACTIVE ALERTS (POLICE)
+// ===============================
+
 export const getActiveAlerts = async (req, res) => {
   try {
 
@@ -61,13 +98,16 @@ export const getActiveAlerts = async (req, res) => {
 };
 
 
+// ===============================
 // USER ALERT HISTORY
+// ===============================
+
 export const getUserAlerts = async (req, res) => {
   try {
 
     const alerts = await Alert.find({
       userId: req.user._id
-    });
+    }).sort({ createdAt: -1 });
 
     res.json(alerts);
 
@@ -81,7 +121,10 @@ export const getUserAlerts = async (req, res) => {
 };
 
 
+// ===============================
 // RESOLVE ALERT
+// ===============================
+
 export const resolveAlert = async (req, res) => {
   try {
 
@@ -94,12 +137,14 @@ export const resolveAlert = async (req, res) => {
     }
 
     alert.status = "RESOLVED";
-
     await alert.save();
 
-    // NOTIFY CLIENTS
+    // ✅ REALTIME UPDATE
     if (io) {
-      io.emit("alertResolved", alert);
+      io.emit("alertResolved", {
+        _id: alert._id,
+        status: "RESOLVED"
+      });
     }
 
     res.json({

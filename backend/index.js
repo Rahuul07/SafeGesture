@@ -19,10 +19,7 @@ import evidenceRoutes from "./routes/evidenceRoutes.js";
 import { setSocket } from "./controllers/alertController.js";
 import { setLocationSocket } from "./controllers/locationController.js";
 
-
-
 const app = express();
-
 
 // ===============================
 // MIDDLEWARE
@@ -31,28 +28,33 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
 // ===============================
-// RATE LIMITING (Security)
+// SMART RATE LIMITING (FIXED)
 // ===============================
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+// ✅ Apply limiter ONLY to auth routes (login/register)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
   message: {
-    message: "Too many requests, please try again later."
+    message: "Too many requests. Please try again later."
   }
 });
 
-app.use(limiter);
+// apply limiter ONLY here
+app.use("/api/users/login", authLimiter);
+app.use("/api/users/register", authLimiter);
 
+// ❌ DO NOT LIMIT THESE (IMPORTANT)
+// /api/alerts → SOS
+// /api/location → live tracking
+// /api/evidence → uploads
 
 // ===============================
 // STATIC VIDEO ACCESS
 // ===============================
 
 app.use("/uploads", express.static("uploads"));
-
 
 // ===============================
 // MONGODB CONNECTION
@@ -66,13 +68,11 @@ mongoose.connect(process.env.MONGO_URI)
   console.log(error);
 });
 
-
 // ===============================
 // CREATE HTTP SERVER
 // ===============================
 
 const server = http.createServer(app);
-
 
 // ===============================
 // SOCKET.IO SERVER
@@ -84,25 +84,18 @@ const io = new Server(server, {
   }
 });
 
-
 // PASS SOCKET TO CONTROLLERS
-
 setSocket(io);
 setLocationSocket(io);
 
-
 // SOCKET CONNECTION
-
 io.on("connection", (socket) => {
-
   console.log("Client Connected:", socket.id);
 
   socket.on("disconnect", () => {
     console.log("Client disconnected");
   });
-
 });
-
 
 // ===============================
 // API ROUTES
@@ -115,7 +108,6 @@ app.use("/api/police", policeRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/evidence", evidenceRoutes);
 
-
 // ===============================
 // ROOT ROUTE
 // ===============================
@@ -123,7 +115,6 @@ app.use("/api/evidence", evidenceRoutes);
 app.get("/", (req, res) => {
   res.send("SafeGesture Backend Running 🚀");
 });
-
 
 // ===============================
 // START SERVER

@@ -18,7 +18,7 @@ const token = localStorage.getItem("token");
 let holdTimer;
 
 
-/* GET USER LOCATION */
+/* GET LOCATION */
 
 const getLocation = ()=>{
 
@@ -26,16 +26,12 @@ return new Promise((resolve,reject)=>{
 
 navigator.geolocation.getCurrentPosition(
 
-(pos)=>{
-
-resolve({
+(pos)=> resolve({
 lat:pos.coords.latitude,
 lng:pos.coords.longitude
-});
+}),
 
-},
-
-(err)=>reject(err),
+(err)=> reject(err),
 
 {enableHighAccuracy:true}
 
@@ -47,9 +43,11 @@ lng:pos.coords.longitude
 
 
 
-/* START CAMERA + RECORD VIDEO */
+/* START RECORDING */
 
 const startRecording = async(alertId)=>{
+
+try{
 
 const stream = await navigator.mediaDevices.getUserMedia({
 video:true,
@@ -57,6 +55,8 @@ audio:true
 });
 
 streamRef.current = stream;
+
+/* SHOW CAMERA */
 
 videoRef.current.srcObject = stream;
 
@@ -73,11 +73,15 @@ mediaRecorder.onstop = async ()=>{
 
 try{
 
+/* CREATE VIDEO */
+
 const blob = new Blob(chunks,{type:"video/webm"});
 
 const formData = new FormData();
 formData.append("video",blob);
 formData.append("alertId",alertId);
+
+/* UPLOAD VIDEO */
 
 await axios.post(
 "http://localhost:5000/api/evidence/upload",
@@ -90,14 +94,24 @@ Authorization:`Bearer ${token}`,
 }
 );
 
-/* STOP CAMERA + MIC */
+/* 🔥 STOP CAMERA + MIC (REAL HARDWARE STOP) */
 
+if(streamRef.current){
 streamRef.current.getTracks().forEach(track => track.stop());
+}
+
+/* REMOVE VIDEO STREAM */
+
+if(videoRef.current){
+videoRef.current.srcObject = null;
+}
+
+/* FINAL MESSAGE */
 
 Swal.fire({
-icon:"info",
-title:"Recording Finished 🎥",
-text:"Camera & microphone turned off"
+icon:"success",
+title:"Recording Completed 🎥",
+text:"Video captured & camera turned OFF"
 });
 
 }catch(err){
@@ -108,10 +122,20 @@ console.log("Upload error:",err);
 
 };
 
+/* START RECORDING */
+
 mediaRecorder.start();
 setRecording(true);
 
-/* STOP AFTER 15 SECONDS */
+/* SHOW START MESSAGE */
+
+Swal.fire({
+icon:"info",
+title:"Recording Started 🎥",
+text:"Camera & microphone activated"
+});
+
+/* STOP AFTER 15 SEC */
 
 setTimeout(()=>{
 
@@ -120,11 +144,22 @@ setRecording(false);
 
 },15000);
 
+}catch(err){
+
+console.log("Camera error:",err);
+
+Swal.fire({
+icon:"error",
+title:"Camera Access Denied"
+});
+
+}
+
 };
 
 
 
-/* LIVE LOCATION TRACKING */
+/* LIVE TRACKING */
 
 const startLiveTracking = ()=>{
 
@@ -184,6 +219,14 @@ Authorization:`Bearer ${token}`
 
 const alertId = alertRes.data.alert._id;
 
+/* ALERT MESSAGE */
+
+Swal.fire({
+icon:"success",
+title:"SOS Triggered 🚨",
+text:"Emergency alert sent successfully"
+});
+
 /* START RECORDING */
 
 await startRecording(alertId);
@@ -192,17 +235,14 @@ await startRecording(alertId);
 
 startLiveTracking();
 
-Swal.fire({
-icon:"success",
-title:"SOS Triggered 🚨",
-text:"Police notified + Recording started"
-});
-
 }catch(err){
+
+console.log(err);
 
 Swal.fire({
 icon:"error",
-title:"SOS Failed"
+title:"SOS Failed",
+text:"Unable to trigger emergency"
 });
 
 }
@@ -216,13 +256,11 @@ title:"SOS Failed"
 const handleHoldStart = ()=>{
 
 let time = 3;
-
 setCountdown(time);
 
 holdTimer = setInterval(()=>{
 
 time--;
-
 setCountdown(time);
 
 if(time === 0){
@@ -259,17 +297,14 @@ background:linear-gradient(135deg,#e3f2fd,#ffffff);
 }
 
 .card-box{
-
 text-align:center;
 padding:40px;
 border-radius:20px;
 box-shadow:0 20px 40px rgba(0,0,0,0.1);
 border:none;
-display:flex;
-justify-content:center;
 align-items:center;
+display:flex;
 }
-
 
 /* SOS BUTTON */
 
@@ -284,8 +319,6 @@ font-size:34px;
 font-weight:bold;
 box-shadow:0 0 40px rgba(255,0,0,0.5);
 animation:pulse 1.5s infinite;
-
-
 }
 
 @keyframes pulse{
@@ -297,7 +330,7 @@ animation:pulse 1.5s infinite;
 /* COUNTDOWN */
 
 .countdown{
-font-size:50px;
+font-size:60px;
 color:red;
 margin-top:20px;
 font-weight:bold;
@@ -358,27 +391,17 @@ SOS
 {/* COUNTDOWN */}
 
 {countdown !== null && (
-<div className="countdown">
-{countdown}
-</div>
+<div className="countdown">{countdown}</div>
 )}
 
-{/* RECORDING STATUS */}
+{/* RECORDING */}
 
 {recording && (
-<p className="recording">
-🔴 Recording...
-</p>
+<p className="recording">🔴 Recording...</p>
 )}
 
 <div className="video-box">
-
-<video
-ref={videoRef}
-autoPlay
-playsInline
-/>
-
+<video ref={videoRef} autoPlay playsInline/>
 </div>
 
 </Card>
