@@ -11,12 +11,17 @@ import {protect} from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 const storage = multer.diskStorage({
+
 destination:function(req,file,cb){
 cb(null,"uploads/videos");
 },
+
 filename:function(req,file,cb){
-cb(null,Date.now()+"-"+file.originalname);
+
+cb(null,Date.now()+".webm");
+
 }
+
 });
 
 const upload = multer({storage});

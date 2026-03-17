@@ -8,12 +8,27 @@ export const uploadEvidence = async(req,res)=>{
 
         const {alertId} = req.body;
 
-        const videoPath = req.file.path;
+        // CHECK VIDEO FILE
+        if(!req.file){
+            return res.status(400).json({
+                message:"Video file missing"
+            });
+        }
+
+        // CHECK ALERT ID
+        if(!alertId){
+            return res.status(400).json({
+                message:"Alert ID is required"
+            });
+        }
+
+        // FRONTEND ACCESSIBLE VIDEO URL
+        const videoUrl = `/uploads/videos/${req.file.filename}`;
 
         const evidence = await Evidence.create({
             userId:req.user._id,
             alertId,
-            videoUrl:videoPath
+            videoUrl
         });
 
         res.json({
@@ -23,6 +38,8 @@ export const uploadEvidence = async(req,res)=>{
 
     }catch(error){
 
+        console.error("Evidence Upload Error:",error);
+
         res.status(500).json({
             message:error.message
         });
@@ -30,6 +47,7 @@ export const uploadEvidence = async(req,res)=>{
     }
 
 };
+
 
 
 

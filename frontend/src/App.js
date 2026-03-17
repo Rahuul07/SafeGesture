@@ -10,14 +10,14 @@ import UserLayout from "./components/userLayout/UserLayout";
 
 
 
-// import LiveTracking from "./components/userLayout/LiveTracking";
-// import EmergencyContact from "./components/userLayout/EmergencyContact";
-// import EvidenceUpload from "./components/userLayout/EvidenceUpload";
+
 
 import { Route, Routes } from "react-router-dom";
 import GestureSOS from "./components/userLayout/GestureSOS";
 import UserDashboard from "./components/userLayout/UserDashboard";
 import UserProfile from "./components/userLayout/UserProfile";
+import EmergencyContact from "./components/userLayout/EmergencyContacts";
+import LiveTracking from "./components/userLayout/LiveTracking";
 
 function App(){
 
@@ -47,10 +47,9 @@ function App(){
 <Route path ="/user/dashboard" element={<UserDashboard/>}/>
  <Route path="/user/gesture-sos" element={<GestureSOS/>}/>
  <Route path ="/user/profile" element={<UserProfile/>}/> 
-{/* //<Route path="live-tracking" element={<LiveTracking/>}/>
-//<Route path="emergency-contact" element={<EmergencyContact/>}/>
-//<Route path="evidence-upload" element={<EvidenceUpload/>}/>
- */}
+ <Route path="/user/live-tracking" element={<LiveTracking/>}/>
+ <Route path="/user/emergency-contact" element={<EmergencyContact/>}/>
+
 
 </Route>
 

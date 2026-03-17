@@ -6,110 +6,140 @@ import { motion } from "framer-motion";
 
 const GestureSOS = () => {
 
-const canvasRef = useRef(null);
-const [drawing,setDrawing] = useState(false);
-const [points,setPoints] = useState([]);
+const videoRef = useRef(null);
+const mediaRecorderRef = useRef(null);
+const streamRef = useRef(null);
+
+const [recording, setRecording] = useState(false);
+const [countdown, setCountdown] = useState(null);
 
 const token = localStorage.getItem("token");
 
-
-const startDrawing = (e)=>{
-setDrawing(true);
-
-const rect = canvasRef.current.getBoundingClientRect();
-
-setPoints([
-{
-x:e.clientX - rect.left,
-y:e.clientY - rect.top
-}
-]);
-};
+let holdTimer;
 
 
-const draw = (e)=>{
+/* GET USER LOCATION */
 
-if(!drawing) return;
+const getLocation = ()=>{
 
-const rect = canvasRef.current.getBoundingClientRect();
+return new Promise((resolve,reject)=>{
 
-const x = e.clientX - rect.left;
-const y = e.clientY - rect.top;
+navigator.geolocation.getCurrentPosition(
 
-setPoints(prev=>[...prev,{x,y}]);
+(pos)=>{
 
-const ctx = canvasRef.current.getContext("2d");
+resolve({
+lat:pos.coords.latitude,
+lng:pos.coords.longitude
+});
 
-ctx.lineWidth = 4;
-ctx.lineCap = "round";
-ctx.strokeStyle = "#ff4d4d";
+},
 
-ctx.lineTo(x,y);
-ctx.stroke();
-ctx.beginPath();
-ctx.moveTo(x,y);
+(err)=>reject(err),
 
-};
+{enableHighAccuracy:true}
 
-
-const stopDrawing = ()=>{
-setDrawing(false);
-
-checkGesture();
-};
-
-
-const checkGesture = ()=>{
-
-if(points.length < 30){
-clearCanvas();
-return;
-}
-
-const start = points[0];
-const mid = points[Math.floor(points.length/2)];
-const end = points[points.length-1];
-
-const zGesture =
-start.x < mid.x &&
-mid.x > end.x &&
-start.y < mid.y &&
-mid.y < end.y;
-
-if(zGesture){
-
-triggerSOS();
-
-}
-
-clearCanvas();
-
-};
-
-
-const clearCanvas = ()=>{
-
-const ctx = canvasRef.current.getContext("2d");
-
-ctx.clearRect(
-0,
-0,
-canvasRef.current.width,
-canvasRef.current.height
 );
 
-setPoints([]);
+});
 
 };
 
 
-const triggerSOS = async ()=>{
+
+/* START CAMERA + RECORD VIDEO */
+
+const startRecording = async(alertId)=>{
+
+const stream = await navigator.mediaDevices.getUserMedia({
+video:true,
+audio:true
+});
+
+streamRef.current = stream;
+
+videoRef.current.srcObject = stream;
+
+const mediaRecorder = new MediaRecorder(stream);
+mediaRecorderRef.current = mediaRecorder;
+
+const chunks = [];
+
+mediaRecorder.ondataavailable = (e)=>{
+chunks.push(e.data);
+};
+
+mediaRecorder.onstop = async ()=>{
 
 try{
 
+const blob = new Blob(chunks,{type:"video/webm"});
+
+const formData = new FormData();
+formData.append("video",blob);
+formData.append("alertId",alertId);
+
 await axios.post(
-"http://localhost:5000/api/alerts/sos",
-{},
+"http://localhost:5000/api/evidence/upload",
+formData,
+{
+headers:{
+Authorization:`Bearer ${token}`,
+"Content-Type":"multipart/form-data"
+}
+}
+);
+
+/* STOP CAMERA + MIC */
+
+streamRef.current.getTracks().forEach(track => track.stop());
+
+Swal.fire({
+icon:"info",
+title:"Recording Finished 🎥",
+text:"Camera & microphone turned off"
+});
+
+}catch(err){
+
+console.log("Upload error:",err);
+
+}
+
+};
+
+mediaRecorder.start();
+setRecording(true);
+
+/* STOP AFTER 15 SECONDS */
+
+setTimeout(()=>{
+
+mediaRecorder.stop();
+setRecording(false);
+
+},15000);
+
+};
+
+
+
+/* LIVE LOCATION TRACKING */
+
+const startLiveTracking = ()=>{
+
+setInterval(async ()=>{
+
+try{
+
+const location = await getLocation();
+
+await axios.post(
+"http://localhost:5000/api/location/update",
+{
+latitude:location.lat,
+longitude:location.lng
+},
 {
 headers:{
 Authorization:`Bearer ${token}`
@@ -117,10 +147,55 @@ Authorization:`Bearer ${token}`
 }
 );
 
+}catch(err){
+
+console.log("Location error:",err);
+
+}
+
+},5000);
+
+};
+
+
+
+/* TRIGGER SOS */
+
+const triggerSOS = async ()=>{
+
+try{
+
+const location = await getLocation();
+
+/* CREATE ALERT */
+
+const alertRes = await axios.post(
+"http://localhost:5000/api/alerts/sos",
+{
+latitude:location.lat,
+longitude:location.lng
+},
+{
+headers:{
+Authorization:`Bearer ${token}`
+}
+}
+);
+
+const alertId = alertRes.data.alert._id;
+
+/* START RECORDING */
+
+await startRecording(alertId);
+
+/* START TRACKING */
+
+startLiveTracking();
+
 Swal.fire({
 icon:"success",
 title:"SOS Triggered 🚨",
-text:"Authorities have been notified"
+text:"Police notified + Recording started"
 });
 
 }catch(err){
@@ -135,78 +210,178 @@ title:"SOS Failed"
 };
 
 
+
+/* HOLD BUTTON WITH COUNTDOWN */
+
+const handleHoldStart = ()=>{
+
+let time = 3;
+
+setCountdown(time);
+
+holdTimer = setInterval(()=>{
+
+time--;
+
+setCountdown(time);
+
+if(time === 0){
+
+clearInterval(holdTimer);
+setCountdown(null);
+triggerSOS();
+
+}
+
+},1000);
+
+};
+
+const handleHoldEnd = ()=>{
+clearInterval(holdTimer);
+setCountdown(null);
+};
+
+
+
 return(
 
 <>
 
 <style>{`
 
-.gesture-page{
-padding:20px;
-color:white;
+.page{
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(135deg,#e3f2fd,#ffffff);
 }
 
-.gesture-card{
-background:rgba(255,255,255,0.1);
-backdrop-filter:blur(10px);
-border:none;
-border-radius:20px;
-padding:20px;
+.card-box{
+
 text-align:center;
-box-shadow:0 10px 30px rgba(0,0,0,0.4);
+padding:40px;
+border-radius:20px;
+box-shadow:0 20px 40px rgba(0,0,0,0.1);
+border:none;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 
-canvas{
-background:white;
+
+/* SOS BUTTON */
+
+.sos-btn{
+width:220px;
+height:220px;
+border-radius:50%;
+background:radial-gradient(circle,#ff4b4b,#b30000);
+border:none;
+color:white;
+font-size:34px;
+font-weight:bold;
+box-shadow:0 0 40px rgba(255,0,0,0.5);
+animation:pulse 1.5s infinite;
+
+
+}
+
+@keyframes pulse{
+0%{transform:scale(1)}
+50%{transform:scale(1.1)}
+100%{transform:scale(1)}
+}
+
+/* COUNTDOWN */
+
+.countdown{
+font-size:50px;
+color:red;
+margin-top:20px;
+font-weight:bold;
+}
+
+/* RECORDING TEXT */
+
+.recording{
+color:red;
+margin-top:10px;
+font-weight:bold;
+}
+
+/* CAMERA */
+
+.video-box{
+margin-top:25px;
+width:260px;
+height:160px;
 border-radius:10px;
-margin-top:15px;
-touch-action:none;
+overflow:hidden;
+margin-left:auto;
+margin-right:auto;
 }
 
-.instruction{
-margin-top:15px;
-font-size:14px;
-opacity:0.8;
+video{
+width:100%;
+height:100%;
+object-fit:cover;
 }
 
 `}</style>
 
 
-<div className="gesture-page">
+<div className="page">
 
 <Container>
 
-<motion.div
-initial={{opacity:0,y:40}}
-animate={{opacity:1,y:0}}
-transition={{duration:0.6}}
+<Card className="card-box">
+
+<h3>Emergency SOS</h3>
+
+<p>Hold for 3 seconds to activate</p>
+
+<motion.button
+className="sos-btn"
+whileTap={{scale:0.9}}
+onMouseDown={handleHoldStart}
+onMouseUp={handleHoldEnd}
+onTouchStart={handleHoldStart}
+onTouchEnd={handleHoldEnd}
 >
 
-<Card className="gesture-card">
+SOS
 
-<h4>Draw Z Gesture to Trigger SOS</h4>
+</motion.button>
 
-<canvas
-ref={canvasRef}
-width={300}
-height={300}
+{/* COUNTDOWN */}
 
-onMouseDown={startDrawing}
-onMouseMove={draw}
-onMouseUp={stopDrawing}
-onMouseLeave={stopDrawing}
+{countdown !== null && (
+<div className="countdown">
+{countdown}
+</div>
+)}
 
+{/* RECORDING STATUS */}
+
+{recording && (
+<p className="recording">
+🔴 Recording...
+</p>
+)}
+
+<div className="video-box">
+
+<video
+ref={videoRef}
+autoPlay
+playsInline
 />
 
-<p className="instruction">
-
-Draw the letter <b>Z</b> on the screen to activate the emergency alert.
-
-</p>
+</div>
 
 </Card>
-
-</motion.div>
 
 </Container>
 

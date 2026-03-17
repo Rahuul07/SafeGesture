@@ -7,7 +7,6 @@ FaTimes,
 FaHandPaper,
 FaMapMarkedAlt,
 FaAddressBook,
-FaVideo,
 FaUser
 } from "react-icons/fa";
 
@@ -50,16 +49,12 @@ transition={{duration:0.4}}
 <FaHandPaper/> Gesture SOS
 </NavLink>
 
-<NavLink to="/live-tracking" onClick={()=>setMenuOpen(false)}>
+<NavLink to="/user/live-tracking" onClick={()=>setMenuOpen(false)}>
 <FaMapMarkedAlt/> Live Tracking
 </NavLink>
 
-<NavLink to="/emergency-contact" onClick={()=>setMenuOpen(false)}>
+<NavLink to="/user/emergency-contact" onClick={()=>setMenuOpen(false)}>
 <FaAddressBook/> Emergency Contacts
-</NavLink>
-
-<NavLink to="/evidence-upload" onClick={()=>setMenuOpen(false)}>
-<FaVideo/> Evidence Upload
 </NavLink>
 
 <NavLink to="/user/profile" onClick={()=>setMenuOpen(false)}>
