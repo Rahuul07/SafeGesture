@@ -1,82 +1,45 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Row, Col, Card, Table } from "react-bootstrap";
 import axios from "axios";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import io from "socket.io-client";
 import { motion } from "framer-motion";
-
-const socket = io("http://localhost:5000");
 
 const PoliceDashboard = () => {
 
 const [alerts,setAlerts] = useState([]);
-const [selectedAlert,setSelectedAlert] = useState(null);
 
 const token = localStorage.getItem("token");
 
-/* FETCH ALERTS */
+/* FETCH ALL ALERTS */
 
-const fetchAlerts = async ()=>{
+const fetchAlerts = async () => {
 try{
+
 const res = await axios.get(
 "http://localhost:5000/api/alerts/active",
 {
 headers:{ Authorization:`Bearer ${token}` }
 }
 );
+
 setAlerts(res.data);
+
 }catch(err){
 console.log(err);
 }
 };
 
-
-/* SOCKET LISTENER */
-
 useEffect(()=>{
-
 fetchAlerts();
-
-/* NEW ALERT */
-socket.on("newAlert",(alert)=>{
-setAlerts(prev => [alert,...prev]);
-});
-
-/* ALERT RESOLVED */
-socket.on("alertResolved",(updated)=>{
-setAlerts(prev =>
-prev.filter(a => a._id !== updated._id)
-);
-});
-
-/* CLEANUP */
-return ()=>{
-socket.off("newAlert");
-socket.off("alertResolved");
-};
-
 },[]);
 
 
-/* RESOLVE ALERT */
+/* CALCULATIONS */
 
-const resolveAlert = async(id)=>{
+const totalAlerts = alerts.length;
 
-try{
+const activeAlerts = alerts.filter(a => a.status === "ACTIVE").length;
 
-await axios.put(
-`http://localhost:5000/api/alerts/resolve/${id}`,
-{},
-{
-headers:{ Authorization:`Bearer ${token}` }
-}
-);
-
-}catch(err){
-console.log(err);
-}
-
-};
+const resolvedAlerts = alerts.filter(a => a.status === "RESOLVED").length;
 
 
 return(
@@ -87,43 +50,34 @@ return(
 
 .dashboard{
 min-height:100vh;
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+background:linear-gradient(135deg,#0f172a,#1e293b);
 padding:20px;
 color:white;
 }
 
-.card-alert{
+/* CARDS */
+
+.stat-card{
 border:none;
+border-radius:15px;
+padding:20px;
+text-align:center;
+color:white;
+box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+.total{background:#2563eb;}
+.active{background:#f59e0b;}
+.resolved{background:#22c55e;}
+
+/* TABLE */
+
+.table-box{
+margin-top:30px;
+background:white;
 border-radius:15px;
 padding:15px;
-background:white;
 color:black;
-box-shadow:0 10px 30px rgba(0,0,0,0.2);
-margin-bottom:15px;
-}
-
-.map-box{
-height:500px;
-border-radius:15px;
-overflow:hidden;
-}
-
-.video-box{
-margin-top:10px;
-}
-
-video{
-width:100%;
-border-radius:10px;
-}
-
-.resolve-btn{
-background:red;
-border:none;
-}
-
-.resolve-btn:hover{
-background:darkred;
 }
 
 `}</style>
@@ -133,127 +87,91 @@ background:darkred;
 
 <Container fluid>
 
+{/* STATS */}
+
 <Row>
 
-{/* LEFT SIDE ALERT LIST */}
-
 <Col md={4}>
-
-<h4>🚨 Active Alerts</h4>
-
-{alerts.length === 0 && <p>No active alerts</p>}
-
-{alerts.map(alert => (
-
-<motion.div
-key={alert._id}
-whileHover={{scale:1.03}}
->
-
-<Card className="card-alert">
-
-<h6>User ID: {alert.userId}</h6>
-
-<p>
-📍 Lat: {alert.location?.latitude}<br/>
-📍 Lng: {alert.location?.longitude}
-</p>
-
-<Button
-variant="danger"
-className="resolve-btn"
-onClick={()=>resolveAlert(alert._id)}
->
-Resolve
-</Button>
-
-<Button
-variant="dark"
-className="mt-2"
-onClick={()=>setSelectedAlert(alert)}
->
-View
-</Button>
-
+<motion.div whileHover={{scale:1.05}}>
+<Card className="stat-card total">
+<h5>Total Alerts</h5>
+<h2>{totalAlerts}</h2>
 </Card>
-
 </motion.div>
-
-))}
-
 </Col>
 
+<Col md={4}>
+<motion.div whileHover={{scale:1.05}}>
+<Card className="stat-card active">
+<h5>Active Alerts</h5>
+<h2>{activeAlerts}</h2>
+</Card>
+</motion.div>
+</Col>
 
-{/* RIGHT SIDE MAP + DETAILS */}
-
-<Col md={8}>
-
-<h4>📍 Live Map</h4>
-
-<div className="map-box">
-
-<MapContainer
-center={[20.5937,78.9629]}
-zoom={5}
-style={{height:"100%",width:"100%"}}
->
-
-<TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-{alerts.map(alert => (
-
-<Marker
-key={alert._id}
-position={[
-alert.location?.latitude,
-alert.location?.longitude
-]}
->
-<Popup>
-SOS Alert 🚨
-</Popup>
-</Marker>
-
-))}
-
-</MapContainer>
-
-</div>
-
-
-{/* SELECTED ALERT DETAILS */}
-
-{selectedAlert && (
-
-<div className="mt-4">
-
-<h5>📄 Alert Details</h5>
-
-<p>
-User: {selectedAlert.userId}<br/>
-Lat: {selectedAlert.location?.latitude}<br/>
-Lng: {selectedAlert.location?.longitude}
-</p>
-
-{/* VIDEO */}
-<div className="video-box">
-
-<video controls>
-<source
-src={`http://localhost:5000/${selectedAlert.videoUrl}`}
-type="video/webm"
-/>
-</video>
-
-</div>
-
-</div>
-
-)}
-
+<Col md={4}>
+<motion.div whileHover={{scale:1.05}}>
+<Card className="stat-card resolved">
+<h5>Resolved Alerts</h5>
+<h2>{resolvedAlerts}</h2>
+</Card>
+</motion.div>
 </Col>
 
 </Row>
+
+
+{/* RECENT ALERTS */}
+
+<div className="table-box">
+
+<h4>Recent Alerts</h4>
+
+<Table striped bordered hover responsive>
+
+<thead>
+<tr>
+<th>User</th>
+<th>Latitude</th>
+<th>Longitude</th>
+<th>Status</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody>
+
+{alerts.map((alert)=>(
+<tr key={alert._id}>
+
+<td>
+{alert.userId?.name || "User"}
+</td>
+
+<td>{alert.location?.latitude}</td>
+
+<td>{alert.location?.longitude}</td>
+
+<td>
+<span style={{
+color: alert.status === "ACTIVE" ? "red" : "green"
+}}>
+{alert.status}
+</span>
+</td>
+
+<td>
+{new Date(alert.createdAt).toLocaleString()}
+</td>
+
+</tr>
+))}
+
+</tbody>
+
+</Table>
+
+</div>
 
 </Container>
 

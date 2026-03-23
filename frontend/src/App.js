@@ -19,6 +19,10 @@ import UserProfile from "./components/userLayout/UserProfile";
 import EmergencyContact from "./components/userLayout/EmergencyContacts";
 import LiveTracking from "./components/userLayout/LiveTracking";
 
+
+import PoliceLayout from "./components/policeLayout/PoliceLayout";
+import PoliceDashboard from "./components/policeLayout/PoliceDashboard";
+
 function App(){
 
  return(
@@ -53,6 +57,13 @@ function App(){
 
 </Route>
 
+
+
+{/* ---------------- POLICE AREA ---------------- */}
+<Route path="/police" element={<PoliceLayout/>}>
+<Route index element={<PoliceDashboard/>}/>
+<Route path="/police/dashboard" element={<PoliceDashboard/>}/>
+</Route>
 
    </Routes>
 

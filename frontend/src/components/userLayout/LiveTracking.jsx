@@ -137,6 +137,7 @@ padding:20px;
 background:white;
 box-shadow:0 20px 50px rgba(0,0,0,0.3);
 
+
 }
 
 .map-title{
@@ -150,7 +151,7 @@ margin-bottom:20px;
 `}</style>
 
 
-<div className="map-page">
+<div className="map-page" style={{justifyContent:"center",display:"flex",alignItems:"center"}}>
 
 <Container>
 
