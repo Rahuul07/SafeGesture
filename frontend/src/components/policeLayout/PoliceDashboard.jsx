@@ -6,17 +6,17 @@ import { motion } from "framer-motion";
 const PoliceDashboard = () => {
 
 const [alerts,setAlerts] = useState([]);
-const [hiddenAlerts,setHiddenAlerts] = useState([]); // ✅ NEW
+const [hiddenAlerts,setHiddenAlerts] = useState([]);
 
 const token = localStorage.getItem("token");
 
-/* FETCH ALERTS */
+/* FETCH ALL ALERTS */
 
 const fetchAlerts = async () => {
 try{
 
 const res = await axios.get(
-"http://localhost:5000/api/alerts/active",
+"http://localhost:5000/api/alerts/all", // ✅ FIXED
 {
 headers:{ Authorization:`Bearer ${token}` }
 }
@@ -31,31 +31,35 @@ console.log(err);
 
 useEffect(()=>{
 fetchAlerts();
+
+/* AUTO REFRESH EVERY 5 SEC */
+const interval = setInterval(fetchAlerts,5000);
+
+return ()=>clearInterval(interval);
+
 },[]);
 
 
-/* FILTER LAST 2 DAYS */
+/* FILTER LAST 2 DAYS FOR TABLE */
 
 const twoDaysAgo = new Date();
 twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
 const recentAlerts = alerts
-.filter(alert =>
-new Date(alert.createdAt) >= twoDaysAgo
-)
-.filter(alert => !hiddenAlerts.includes(alert._id)); // ✅ REMOVE FROM UI ONLY
+.filter(alert => new Date(alert.createdAt) >= twoDaysAgo)
+.filter(alert => !hiddenAlerts.includes(alert._id));
 
 
-/* CALCULATIONS */
+/* COUNTS FROM FULL DATA (IMPORTANT) */
 
-const totalAlerts = recentAlerts.length;
+const totalAlerts = alerts.length;
 
-const activeAlerts = recentAlerts.filter(a => a.status === "ACTIVE").length;
+const activeAlerts = alerts.filter(a => a.status === "ACTIVE").length;
 
-const resolvedAlerts = recentAlerts.filter(a => a.status === "RESOLVED").length;
+const resolvedAlerts = alerts.filter(a => a.status === "RESOLVED").length;
 
 
-/* ✅ REMOVE FROM RECENT ONLY (NOT DB) */
+/* REMOVE ONLY FROM UI */
 
 const removeFromRecent = (id) => {
 setHiddenAlerts(prev => [...prev, id]);
@@ -175,9 +179,7 @@ cursor:not-allowed;
 {recentAlerts.map((alert)=>(
 <tr key={alert._id}>
 
-<td>
-{alert.userId?.name || "User"}
-</td>
+<td>{alert.userId?.name || "User"}</td>
 
 <td>{alert.location?.latitude}</td>
 
@@ -199,7 +201,7 @@ color: alert.status === "ACTIVE" ? "red" : "green"
 <Button
 className="delete-btn"
 size="sm"
-disabled={alert.status !== "RESOLVED"} // ✅ only resolved
+disabled={alert.status !== "RESOLVED"}
 onClick={()=>removeFromRecent(alert._id)}
 >
 Remove

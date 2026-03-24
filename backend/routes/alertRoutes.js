@@ -3,6 +3,7 @@ import express from "express";
 import {
   createAlert,
   getActiveAlerts,
+  getAllAlerts,
   getUserAlerts,
   resolveAlert
 } from "../controllers/alertController.js";
@@ -33,6 +34,13 @@ router.get("/my-alerts", protect, getUserAlerts);
 
 router.get("/active", protect, getActiveAlerts);
 
+
+// ===============================
+// POLICE FETCH ALL ALERTS
+// ===============================
+
+
+router.get("/all", protect, getAllAlerts);
 
 // ===============================
 // POLICE RESOLVE ALERT
