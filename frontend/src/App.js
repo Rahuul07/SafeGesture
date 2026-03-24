@@ -1,73 +1,101 @@
+import { Route, Routes } from "react-router-dom";
+
+// GUEST
 import Home from "./components/guestLayout/Home";
 import AboutUs from "./components/guestLayout/AboutUs";
 import Services from "./components/guestLayout/Services";
 import Features from "./components/guestLayout/Features";
 import Login from "./components/guestLayout/Login";
 import Register from "./components/guestLayout/Register";
-
 import GuestLayout from "./components/guestLayout/GuestLayout";
+
+// USER
 import UserLayout from "./components/userLayout/UserLayout";
-
-
-
-
-
-import { Route, Routes } from "react-router-dom";
-import GestureSOS from "./components/userLayout/GestureSOS";
 import UserDashboard from "./components/userLayout/UserDashboard";
+import GestureSOS from "./components/userLayout/GestureSOS";
 import UserProfile from "./components/userLayout/UserProfile";
 import EmergencyContact from "./components/userLayout/EmergencyContacts";
 import LiveTracking from "./components/userLayout/LiveTracking";
 
-
+// POLICE
 import PoliceLayout from "./components/policeLayout/PoliceLayout";
 import PoliceDashboard from "./components/policeLayout/PoliceDashboard";
 
-function App(){
+// ✅ ADMIN (ADD THESE FILES)
+import AdminLayout from "./components/adminLayout/AdminLayout";
+import AdminDashboard from "./components/adminLayout/AdminDashboard";
 
- return(
+// 🔐 PROTECTED ROUTE
+import ProtectedRoute from "./components/ProtectedRoute";
 
-   <Routes>
+function App() {
 
-{/* ---------------- GUEST AREA ---------------- */}
+  return (
 
-<Route path="/" element={<GuestLayout/>}>
+    <Routes>
 
-<Route index element={<Home/>}/>
-<Route path="home" element={<Home/>}/>
-<Route path="aboutus" element={<AboutUs/>}/>
-<Route path="services" element={<Services/>}/>
-<Route path="features" element={<Features/>}/>
-<Route path="login" element={<Login/>}/>
-<Route path="register" element={<Register/>}/>
+      {/* ---------------- GUEST AREA ---------------- */}
+      <Route path="/" element={<GuestLayout />}>
 
-</Route>
+        <Route index element={<Home />} />
+        <Route path="home" element={<Home />} />
+        <Route path="aboutus" element={<AboutUs />} />
+        <Route path="services" element={<Services />} />
+        <Route path="features" element={<Features />} />
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
 
+      </Route>
 
-{/* ---------------- USER AREA ---------------- */}
+      {/* ---------------- USER AREA ---------------- */}
+      <Route
+        path="/user"
+        element={
+          <ProtectedRoute role="user">
+            <UserLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<UserDashboard />} />
+        <Route path="dashboard" element={<UserDashboard />} />
+        <Route path="gesture-sos" element={<GestureSOS />} />
+        <Route path="profile" element={<UserProfile />} />
+        <Route path="live-tracking" element={<LiveTracking />} />
+        <Route path="emergency-contact" element={<EmergencyContact />} />
 
-<Route path="/" element={<UserLayout/>}>
-<Route element ={<UserDashboard/>}/>
-<Route path ="/user/dashboard" element={<UserDashboard/>}/>
- <Route path="/user/gesture-sos" element={<GestureSOS/>}/>
- <Route path ="/user/profile" element={<UserProfile/>}/> 
- <Route path="/user/live-tracking" element={<LiveTracking/>}/>
- <Route path="/user/emergency-contact" element={<EmergencyContact/>}/>
+      </Route>
 
+      {/* ---------------- POLICE AREA ---------------- */}
+      <Route
+        path="/police"
+        element={
+          <ProtectedRoute role="police">
+            <PoliceLayout />
+          </ProtectedRoute>
+        }
+      >
 
-</Route>
+        <Route path="dashboard" element={<PoliceDashboard />} />
 
+      </Route>
 
+      {/* ---------------- ADMIN AREA ---------------- */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
 
-{/* ---------------- POLICE AREA ---------------- */}
-<Route path="/police" element={<PoliceLayout/>}>
-<Route index element={<PoliceDashboard/>}/>
-<Route path="/police/dashboard" element={<PoliceDashboard/>}/>
-</Route>
+        <Route path="dashboard" element={<AdminDashboard />} />
 
-   </Routes>
+      </Route>
 
- );
+    </Routes>
+
+  );
 
 }
 

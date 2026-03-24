@@ -136,9 +136,16 @@ export const loginUser = async (req, res) => {
 
   try {
 
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email,role });  // ✅ CHECK ROLE DURING LOGIN
+
+    if (!user) {
+      return res.status(401).json({
+        message: `No ${role} account found with this email`
+      });
+    }
+
 
     if (user && (await bcrypt.compare(password, user.password))) {
 
@@ -147,6 +154,7 @@ export const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,   // ✅ VERY IMPORTANT
         token: generateToken(user._id)
       });
 
@@ -167,7 +175,6 @@ export const loginUser = async (req, res) => {
   }
 
 };
-
 
 
 // GET USER PROFILE

@@ -16,11 +16,7 @@ const GuestNavbar = () => {
     });
 
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -46,15 +42,10 @@ const GuestNavbar = () => {
         <Container>
 
           {/* Logo */}
-
-          <motion.div
-            whileHover={{ scale: 1.1 }}
-          >
-
+          <motion.div whileHover={{ scale: 1.1 }}>
             <Navbar.Brand className="brand-logo">
               SafeGesture
             </Navbar.Brand>
-
           </motion.div>
 
           <Navbar.Toggle />
@@ -66,6 +57,7 @@ const GuestNavbar = () => {
               <Nav.Link href="/home" className="nav-link-custom">
                 Home
               </Nav.Link>
+
               <Nav.Link href="/aboutus" className="nav-link-custom">
                 AboutUs
               </Nav.Link>
@@ -78,7 +70,7 @@ const GuestNavbar = () => {
                 Register
               </Nav.Link>
 
-              <Nav.Link href="/login" className="nav-link-custom">
+               <Nav.Link href="/login" className="nav-link-custom">
                 Login
               </Nav.Link>
 
@@ -93,45 +85,37 @@ const GuestNavbar = () => {
       {/* CSS */}
 
       <style>
-
         {`
 
         .guest-navbar{
-
           padding:15px 0;
           transition:all .3s ease;
           background:transparent;
-
         }
+         #login-dropdown{
+         color:white !important;}
 
         .guest-navbar.scrolled{
-
-          background:rgba(0,0,0,0.65);
+          background:rgba(0, 0, 0, 0.65);
           backdrop-filter:blur(10px);
           box-shadow:0 5px 20px rgba(0,0,0,0.3);
-
         }
 
         .brand-logo{
-
           color:white !important;
           font-size:26px;
           font-weight:700;
           letter-spacing:1px;
-
         }
 
         .nav-link-custom{
-
           color:white !important;
           margin-left:25px;
           font-weight:500;
           position:relative;
-
         }
 
         .nav-link-custom::after{
-
           content:"";
           position:absolute;
           width:0%;
@@ -140,23 +124,34 @@ const GuestNavbar = () => {
           left:0;
           background:#ff6a00;
           transition:0.3s;
-
         }
 
         .nav-link-custom:hover::after{
-
           width:100%;
-
         }
 
         .nav-link-custom:hover{
-
           color:#ff6a00 !important;
+        }
 
+        /* ✅ DROPDOWN STYLING */
+        .dropdown-menu{
+          background:rgba(0, 0, 0, 0.9) !important;
+          border:none;
+          border-radius:10px;
+        }
+
+        .dropdown-item{
+          color:white !important;
+          transition:0.3s;
+        }
+
+        .dropdown-item:hover{
+          background:#ff6a00 !important;
+          color:white !important;
         }
 
         `}
-        
       </style>
 
     </motion.div>

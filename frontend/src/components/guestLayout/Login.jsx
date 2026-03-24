@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
-import { motion } from "framer-motion";
-import { FaEnvelope, FaLock } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaEnvelope, FaLock, FaUser, FaUserShield } from "react-icons/fa";
+import { MdLocalPolice } from "react-icons/md";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -14,6 +15,10 @@ const [formData,setFormData] = useState({
 email:"",
 password:""
 });
+
+// UI states (same)
+const [selectedRole, setSelectedRole] = useState("user");
+const [showRoleBox, setShowRoleBox] = useState(false);
 
 const handleChange = (e)=>{
 setFormData({
@@ -31,33 +36,45 @@ Swal.fire({
   confirmButtonColor: "#ff7a18",
   background: "#1f2937",
   color: "white",
-  backdrop: `rgba(0,0,0,0.7)`,
-  showClass: {
-    popup: "animate__animated animate__zoomIn"
-  },
-  hideClass: {
-    popup: "animate__animated animate__zoomOut"
-  }
+  backdrop: `rgba(0,0,0,0.7)`
 });
 
 };
 
-const handleSubmit = async (e)=>{
-e.preventDefault();
+// ✅ UPDATED: now sends role
+const handleSubmit = async (role)=>{
 
 try{
 
 const res = await axios.post(
 "http://localhost:5000/api/users/login",
-formData
+{
+...formData,
+role: role || selectedRole   // ✅ IMPORTANT FIX
+}
 );
 
 localStorage.setItem("token",res.data.token);
+localStorage.setItem("role",res.data.role);
 
 showPopup("Login Successful ✅","success");
 
+// close panel
+setShowRoleBox(false);
+
+// redirect
 setTimeout(()=>{
-navigate("/user/dashboard");
+
+if(res.data.role === "admin"){
+  navigate("/admin/dashboard");
+}
+else if(res.data.role === "police"){
+  navigate("/police/dashboard");
+}
+else{
+  navigate("/user/dashboard");
+}
+
 },2000);
 
 }catch(error){
@@ -149,6 +166,36 @@ font-weight:bold;
 transform:scale(1.05);
 }
 
+.role-box{
+position:absolute;
+right:-200px;
+top:0;
+background:rgba(0,0,0,0.85);
+padding:15px;
+border-radius:12px;
+width:180px;
+}
+
+.role-item{
+display:flex;
+align-items:center;
+gap:10px;
+padding:8px;
+border-radius:8px;
+cursor:pointer;
+transition:0.3s;
+}
+
+.role-item:hover{
+background:rgba(255,255,255,0.1);
+}
+
+.role-active{
+background:linear-gradient(45deg,#ff7a18,#ffd200);
+color:black;
+font-weight:bold;
+}
+
 `}</style>
 
 <div className="login-page">
@@ -158,9 +205,7 @@ transform:scale(1.05);
 <div className="bubble b3"></div>
 
 <Container>
-
 <Row className="justify-content-center">
-
 <Col md={6} lg={5}>
 
 <motion.div
@@ -175,7 +220,7 @@ transition={{duration:0.8}}
 Login to SafeGesture
 </h3>
 
-<Form onSubmit={handleSubmit}>
+<Form onSubmit={(e)=>e.preventDefault()}>
 
 <Form.Group className="mb-3">
 <Form.Label>
@@ -205,12 +250,61 @@ required
 />
 </Form.Group>
 
+<div style={{ position:"relative" }}>
+
 <Button
-type="submit"
+type="button"
 className="w-100 login-btn"
+onClick={()=>setShowRoleBox(!showRoleBox)}
 >
 Login
 </Button>
+
+<AnimatePresence>
+{showRoleBox && (
+<motion.div
+className="role-box"
+initial={{x:50,opacity:0}}
+animate={{x:0,opacity:1}}
+exit={{x:50,opacity:0}}
+transition={{duration:0.3}}
+>
+
+<div
+className={`role-item ${selectedRole==="user" && "role-active"}`}
+onClick={()=>{
+setSelectedRole("user");
+handleSubmit("user");
+}}
+>
+<FaUser/> User
+</div>
+
+<div
+className={`role-item ${selectedRole==="police" && "role-active"}`}
+onClick={()=>{
+setSelectedRole("police");
+handleSubmit("police");
+}}
+>
+<MdLocalPolice/> Police
+</div>
+
+<div
+className={`role-item ${selectedRole==="admin" && "role-active"}`}
+onClick={()=>{
+setSelectedRole("admin");
+handleSubmit("admin");
+}}
+>
+<FaUserShield/> Admin
+</div>
+
+</motion.div>
+)}
+</AnimatePresence>
+
+</div>
 
 </Form>
 
@@ -229,9 +323,7 @@ Register
 </motion.div>
 
 </Col>
-
 </Row>
-
 </Container>
 
 </div>
