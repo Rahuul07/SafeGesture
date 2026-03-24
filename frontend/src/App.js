@@ -27,6 +27,7 @@ import AdminDashboard from "./components/adminLayout/AdminDashboard";
 
 // 🔐 PROTECTED ROUTE
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute"; 
 
 function App() {
 
@@ -44,6 +45,21 @@ function App() {
         <Route path="features" element={<Features />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+
+         {/* 🔐 PUBLIC ROUTES (BLOCK IF LOGGED IN) */}
+        <Route path="login" element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+
+        <Route path="register" element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
 
       </Route>
 
