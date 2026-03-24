@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Table } from "react-bootstrap";
+import { Container, Row, Col, Card, Table, Button } from "react-bootstrap";
 import axios from "axios";
 import { motion } from "framer-motion";
 
 const PoliceDashboard = () => {
 
 const [alerts,setAlerts] = useState([]);
+const [hiddenAlerts,setHiddenAlerts] = useState([]); // ✅ NEW
 
 const token = localStorage.getItem("token");
 
-/* FETCH ALL ALERTS */
+/* FETCH ALERTS */
 
 const fetchAlerts = async () => {
 try{
@@ -33,13 +34,32 @@ fetchAlerts();
 },[]);
 
 
+/* FILTER LAST 2 DAYS */
+
+const twoDaysAgo = new Date();
+twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+const recentAlerts = alerts
+.filter(alert =>
+new Date(alert.createdAt) >= twoDaysAgo
+)
+.filter(alert => !hiddenAlerts.includes(alert._id)); // ✅ REMOVE FROM UI ONLY
+
+
 /* CALCULATIONS */
 
-const totalAlerts = alerts.length;
+const totalAlerts = recentAlerts.length;
 
-const activeAlerts = alerts.filter(a => a.status === "ACTIVE").length;
+const activeAlerts = recentAlerts.filter(a => a.status === "ACTIVE").length;
 
-const resolvedAlerts = alerts.filter(a => a.status === "RESOLVED").length;
+const resolvedAlerts = recentAlerts.filter(a => a.status === "RESOLVED").length;
+
+
+/* ✅ REMOVE FROM RECENT ONLY (NOT DB) */
+
+const removeFromRecent = (id) => {
+setHiddenAlerts(prev => [...prev, id]);
+};
 
 
 return(
@@ -55,8 +75,6 @@ padding:20px;
 color:white;
 }
 
-/* CARDS */
-
 .stat-card{
 border:none;
 border-radius:15px;
@@ -70,14 +88,26 @@ box-shadow:0 10px 30px rgba(0,0,0,0.4);
 .active{background:#f59e0b;}
 .resolved{background:#22c55e;}
 
-/* TABLE */
-
 .table-box{
 margin-top:30px;
 background:white;
 border-radius:15px;
 padding:15px;
 color:black;
+}
+
+.delete-btn{
+background:red;
+border:none;
+}
+
+.delete-btn:hover{
+background:darkred;
+}
+
+.delete-btn:disabled{
+background:gray;
+cursor:not-allowed;
 }
 
 `}</style>
@@ -121,11 +151,11 @@ color:black;
 </Row>
 
 
-{/* RECENT ALERTS */}
+{/* TABLE */}
 
 <div className="table-box">
 
-<h4>Recent Alerts</h4>
+<h4>Recent Alerts (Last 2 Days)</h4>
 
 <Table striped bordered hover responsive>
 
@@ -136,12 +166,13 @@ color:black;
 <th>Longitude</th>
 <th>Status</th>
 <th>Time</th>
+<th>Action</th>
 </tr>
 </thead>
 
 <tbody>
 
-{alerts.map((alert)=>(
+{recentAlerts.map((alert)=>(
 <tr key={alert._id}>
 
 <td>
@@ -162,6 +193,17 @@ color: alert.status === "ACTIVE" ? "red" : "green"
 
 <td>
 {new Date(alert.createdAt).toLocaleString()}
+</td>
+
+<td>
+<Button
+className="delete-btn"
+size="sm"
+disabled={alert.status !== "RESOLVED"} // ✅ only resolved
+onClick={()=>removeFromRecent(alert._id)}
+>
+Remove
+</Button>
 </td>
 
 </tr>

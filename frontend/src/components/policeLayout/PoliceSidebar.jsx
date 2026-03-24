@@ -14,9 +14,9 @@ const PoliceSidebar = ({ isOpen, closeSidebar }) => {
 const navigate = useNavigate();
 
 const menu = [
-{ name:"Dashboard", icon:<FaMapMarkedAlt/>, path:"/police-dashboard" },
-{ name:"Active Alerts", icon:<FaBell/>, path:"/police-dashboard" },
-{ name:"History", icon:<FaHistory/>, path:"/police-history" }
+{ name:"Dashboard", icon:<FaMapMarkedAlt/>, path:"/police/dashboard" },
+{ name:"Active Alerts", icon:<FaBell/>, path:"/police/alerts" },
+{ name:"History", icon:<FaHistory/>, path:"/police/history" }
 ];
 
 return (
