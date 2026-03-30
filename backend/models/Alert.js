@@ -13,6 +13,12 @@ const alertSchema = new mongoose.Schema(
       longitude: Number
     },
 
+    // ✅ NEW FIELD (FULL ADDRESS)
+    locationName: {
+      type: String,
+      default: "Unknown Location"
+    },
+
     status: {
       type: String,
       enum: ["ACTIVE", "RESOLVED"],

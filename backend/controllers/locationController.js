@@ -1,4 +1,5 @@
 import Location from "../models/Location.js";
+import Alert from "../models/Alert.js"; // ✅ ADDED
 
 let io;
 
@@ -20,9 +21,28 @@ export const updateLocation = async (req,res)=>{
             longitude
         });
 
+        // ✅ UPDATE ACTIVE ALERT WITH LATEST LOCATION
+        const activeAlert = await Alert.findOne({
+            userId: req.user._id,
+            status: "ACTIVE"
+        });
+
+        if(activeAlert){
+            activeAlert.location = {
+                latitude,
+                longitude
+            };
+
+            await activeAlert.save();
+        }
+
         // REALTIME LOCATION EVENT
         if(io){
-            io.emit("userLocationUpdate",location);
+            io.emit("userLocationUpdate",{
+                userId:req.user._id,
+                latitude,
+                longitude
+            });
         }
 
         res.json({

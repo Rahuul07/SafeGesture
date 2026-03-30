@@ -20,6 +20,7 @@ import LiveTracking from "./components/userLayout/LiveTracking";
 // POLICE
 import PoliceLayout from "./components/policeLayout/PoliceLayout";
 import PoliceDashboard from "./components/policeLayout/PoliceDashboard";
+import ActiveAlerts from "./components/policeLayout/ActiveAlerts";
 
 // ✅ ADMIN (ADD THESE FILES)
 import AdminLayout from "./components/adminLayout/AdminLayout";
@@ -28,6 +29,7 @@ import AdminDashboard from "./components/adminLayout/AdminDashboard";
 // 🔐 PROTECTED ROUTE
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute"; 
+
 
 function App() {
 
@@ -92,7 +94,7 @@ function App() {
       >
 
         <Route path="dashboard" element={<PoliceDashboard />} />
-
+         <Route path="active-alerts" element={<ActiveAlerts />} />
       </Route>
 
       {/* ---------------- ADMIN AREA ---------------- */}

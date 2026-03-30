@@ -15,7 +15,7 @@ const navigate = useNavigate();
 
 const menu = [
 { name:"Dashboard", icon:<FaMapMarkedAlt/>, path:"/police/dashboard" },
-{ name:"Active Alerts", icon:<FaBell/>, path:"/police/alerts" },
+{ name:"Active Alerts", icon:<FaBell/>, path:"/police/active-alerts" },
 { name:"History", icon:<FaHistory/>, path:"/police/history" }
 ];
 

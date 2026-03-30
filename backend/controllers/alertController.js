@@ -1,4 +1,5 @@
 import Alert from "../models/Alert.js";
+import axios from "axios"; // ✅ ADDED
 
 let io;
 
@@ -38,6 +39,20 @@ export const createAlert = async (req, res) => {
       }
     }
 
+    // ✅ GET FULL ADDRESS FROM LAT/LNG
+    let locationName = "Unknown Location";
+
+    try {
+      const geoRes = await axios.get(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+      );
+
+      locationName = geoRes.data.display_name;
+
+    } catch (err) {
+      console.log("Geo error:", err.message);
+    }
+
     // ✅ CREATE ALERT
     const alert = await Alert.create({
       userId: req.user._id,
@@ -45,6 +60,7 @@ export const createAlert = async (req, res) => {
         latitude,
         longitude
       },
+      locationName, // ✅ NEW FIELD
       status: "ACTIVE"
     });
 
@@ -54,6 +70,7 @@ export const createAlert = async (req, res) => {
         _id: alert._id,
         userId: alert.userId,
         location: alert.location,
+        locationName: alert.locationName, // ✅ ADDED
         status: alert.status,
         createdAt: alert.createdAt
       });
@@ -160,6 +177,7 @@ export const resolveAlert = async (req, res) => {
 
   }
 };
+
 
 // ===============================
 // GET ALL ALERTS (Police)
