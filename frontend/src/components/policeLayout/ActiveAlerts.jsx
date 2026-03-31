@@ -78,6 +78,7 @@ a._id === data._id ? { ...a, status:"RESOLVED" } : a
 );
 });
 
+/* 🔥 FIX: proper userId comparison */
 socket.on("userLocationUpdate",(data)=>{
 setAlerts(prev =>
 prev.map(a =>
@@ -138,6 +139,9 @@ height:180px;
 border-radius:10px;
 overflow:hidden;
 background:black;
+display:flex;
+align-items:center;
+justify-content:center;
 }
 
 video{
@@ -183,8 +187,12 @@ transform:scale(1.05);
 
 {alerts.map((alert)=>{
 
-// ✅ FIXED VIDEO FIELD
-const videoUrl = alert.evidenceVideo;
+/* 🔥 FINAL VIDEO FIX */
+const videoUrl = alert.evidence?.videoUrl
+? `http://localhost:5000${alert.evidence.videoUrl}`
+: null;
+
+console.log("VIDEO URL:", videoUrl); // DEBUG
 
 return(
 
@@ -204,9 +212,9 @@ transition={{duration:0.5}}
 
 <h5>👤 {alert.userId?.name || "User"}</h5>
 
-<p>📞 {alert.userId?.phone}</p>
+<p>📞 {alert.userId?.phone || "No phone"}</p>
 
-<p>📍 {alert.locationName || "Fetching location..."}</p>
+<p>📍 {alert.locationName || "Unknown Location"}</p>
 
 <p>
 Status:{" "}
@@ -237,11 +245,11 @@ Resolve
 <div className="video-box">
 
 {videoUrl ? (
-<video controls>
+<video controls autoPlay muted>
 <source src={videoUrl} type="video/webm" />
 </video>
 ) : (
-<p style={{color:"white",textAlign:"center",marginTop:"70px"}}>
+<p style={{color:"white"}}>
 No Evidence
 </p>
 )}

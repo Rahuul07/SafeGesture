@@ -1,6 +1,6 @@
 import Alert from "../models/Alert.js";
 import axios from "axios";
-import Evidence from "../models/Evidence.js"; // ✅ ADDED
+import Evidence from "../models/Evidence.js";
 
 let io;
 
@@ -19,14 +19,13 @@ export const createAlert = async (req, res) => {
 
     const { latitude, longitude } = req.body;
 
-    // ✅ VALIDATION
     if (!latitude || !longitude) {
       return res.status(400).json({
         message: "Location is required"
       });
     }
 
-    // ✅ PREVENT SPAM (cooldown 10 sec)
+    // PREVENT SPAM
     const lastAlert = await Alert.findOne({ userId: req.user._id })
       .sort({ createdAt: -1 });
 
@@ -41,22 +40,36 @@ export const createAlert = async (req, res) => {
     }
 
     // ===============================
-    // GET FULL ADDRESS
+    // GET ADDRESS (FINAL FIX 🔥)
     // ===============================
 
-    let locationName = "Fetching location...";
+    let locationName = "Unknown Location";
 
     try {
+
       const geoRes = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+        "https://nominatim.openstreetmap.org/reverse",
+        {
+          params: {
+            format: "json",
+            lat: latitude,
+            lon: longitude
+          },
+          headers: {
+            "User-Agent": "SafeGestureApp/1.0"
+          }
+        }
       );
 
-      locationName = geoRes.data.display_name || "Unknown Location";
+      if (geoRes.data && geoRes.data.display_name) {
+        locationName = geoRes.data.display_name;
+      }
 
     } catch (err) {
-      console.log("Geo error:", err.message);
-      locationName = "Unknown Location";
+      console.log("❌ Geo error:", err.message);
     }
+
+    console.log("📍 Location:", locationName); // DEBUG
 
     // ===============================
     // CREATE ALERT
@@ -64,27 +77,14 @@ export const createAlert = async (req, res) => {
 
     const alert = await Alert.create({
       userId: req.user._id,
-      location: {
-        latitude,
-        longitude
-      },
+      location: { latitude, longitude },
       locationName,
       status: "ACTIVE"
     });
 
-    // ===============================
-    // SOCKET EMIT
-    // ===============================
-
+    // SOCKET
     if (io) {
-      io.emit("newAlert", {
-        _id: alert._id,
-        userId: alert.userId,
-        location: alert.location,
-        locationName: alert.locationName,
-        status: alert.status,
-        createdAt: alert.createdAt
-      });
+      io.emit("newAlert", alert);
     }
 
     res.status(201).json({
@@ -93,19 +93,16 @@ export const createAlert = async (req, res) => {
     });
 
   } catch (error) {
-
     console.error("SOS ERROR:", error);
-
     res.status(500).json({
       message: "Failed to trigger SOS"
     });
-
   }
 };
 
 
 // ===============================
-// GET ACTIVE ALERTS (WITH VIDEO)
+// GET ACTIVE ALERTS (VIDEO FIX 🔥)
 // ===============================
 
 export const getActiveAlerts = async (req, res) => {
@@ -115,30 +112,42 @@ export const getActiveAlerts = async (req, res) => {
       .populate("userId", "name phone email")
       .lean();
 
-    // ✅ ATTACH EVIDENCE TO EACH ALERT
-    const alertsWithEvidence = await Promise.all(
-      alerts.map(async (alert) => {
+    const alertIds = alerts.map(a => a._id);
 
-        const evidence = await Evidence.findOne({
-          alertId: alert._id
-        });
+    // GET ALL EVIDENCE
+    const evidences = await Evidence.find({
+      alertId: { $in: alertIds }
+    });
 
-        return {
-          ...alert,
-          evidenceVideo: evidence ? evidence.videoUrl : null
-        };
+    // MAP EVIDENCE
+    const alertsWithEvidence = alerts.map(alert => {
 
-      })
-    );
+      const evidence = evidences.find(
+        e => e.alertId.toString() === alert._id.toString()
+      );
+
+      if (evidence) {
+        console.log("🎥 Found video:", evidence.videoUrl); // DEBUG
+      }
+
+      return {
+        ...alert,
+        evidence: evidence
+          ? {
+              videoUrl: evidence.videoUrl   // ✅ IMPORTANT FIX
+            }
+          : null
+      };
+
+    });
 
     res.json(alertsWithEvidence);
 
   } catch (error) {
-
+    console.log("❌ Alert fetch error:", error);
     res.status(500).json({
       message: error.message
     });
-
   }
 };
 
@@ -157,11 +166,9 @@ export const getUserAlerts = async (req, res) => {
     res.json(alerts);
 
   } catch (error) {
-
     res.status(500).json({
       message: error.message
     });
-
   }
 };
 
@@ -197,11 +204,9 @@ export const resolveAlert = async (req, res) => {
     });
 
   } catch (error) {
-
     res.status(500).json({
       message: error.message
     });
-
   }
 };
 

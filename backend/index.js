@@ -24,12 +24,14 @@ import { setLocationSocket } from "./controllers/locationController.js";
 
 const app = express();
 
+
 // ===============================
 // PATH FIX (VERY IMPORTANT)
 // ===============================
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 
 // ===============================
 // MIDDLEWARE
@@ -38,11 +40,11 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use(express.json());
 
+
 // ===============================
 // SMART RATE LIMITING (FIXED)
 // ===============================
 
-// ✅ Apply limiter ONLY to auth routes (login/register)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
@@ -51,18 +53,21 @@ const authLimiter = rateLimit({
   }
 });
 
-// apply limiter ONLY here
 app.use("/api/users/login", authLimiter);
 app.use("/api/users/register", authLimiter);
 
+
 // ===============================
-// STATIC VIDEO ACCESS (FIXED)
+// 🔥 STATIC VIDEO ACCESS (FINAL FIX)
 // ===============================
 
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads"))
-);
+// 👉 This ensures correct absolute path
+const uploadsPath = path.join(__dirname, "uploads");
+
+app.use("/uploads", express.static(uploadsPath));
+
+console.log("📁 Serving uploads from:", uploadsPath);
+
 
 // ===============================
 // MONGODB CONNECTION
@@ -76,11 +81,13 @@ mongoose.connect(process.env.MONGO_URI)
   console.log(error);
 });
 
+
 // ===============================
 // CREATE HTTP SERVER
 // ===============================
 
 const server = http.createServer(app);
+
 
 // ===============================
 // SOCKET.IO SERVER
@@ -92,11 +99,14 @@ const io = new Server(server, {
   }
 });
 
-// PASS SOCKET TO CONTROLLERS
 setSocket(io);
 setLocationSocket(io);
 
+
+// ===============================
 // SOCKET CONNECTION
+// ===============================
+
 io.on("connection", (socket) => {
   console.log("Client Connected:", socket.id);
 
@@ -104,6 +114,7 @@ io.on("connection", (socket) => {
     console.log("Client disconnected");
   });
 });
+
 
 // ===============================
 // API ROUTES
@@ -116,6 +127,7 @@ app.use("/api/police", policeRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/evidence", evidenceRoutes);
 
+
 // ===============================
 // ROOT ROUTE
 // ===============================
@@ -123,6 +135,7 @@ app.use("/api/evidence", evidenceRoutes);
 app.get("/", (req, res) => {
   res.send("SafeGesture Backend Running 🚀");
 });
+
 
 // ===============================
 // START SERVER
