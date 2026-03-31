@@ -35,10 +35,16 @@ const userSchema = new mongoose.Schema(
     },
 
     role: {
-  type: String,
-  enum: ["user", "admin", "police"],
-  default: "user"
-},
+      type: String,
+      enum: ["user", "admin", "police"],
+      default: "user"
+    },
+
+    // ✅ NEW FIELD (PROFILE IMAGE)
+    image: {
+      type: String,
+      default: ""
+    },
 
     emergencyContacts: [contactSchema],
 
