@@ -13,7 +13,7 @@ const alertSchema = new mongoose.Schema(
       longitude: Number
     },
 
-    // ✅ NEW FIELD (FULL ADDRESS)
+    // ✅ ADD THIS (FIX)
     locationName: {
       type: String,
       default: "Unknown Location"

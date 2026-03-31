@@ -9,6 +9,9 @@ import http from "http";
 import { Server } from "socket.io";
 import rateLimit from "express-rate-limit";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
 import userRoutes from "./routes/userRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
 import locationRoutes from "./routes/locationRoutes.js";
@@ -20,6 +23,13 @@ import { setSocket } from "./controllers/alertController.js";
 import { setLocationSocket } from "./controllers/locationController.js";
 
 const app = express();
+
+// ===============================
+// PATH FIX (VERY IMPORTANT)
+// ===============================
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ===============================
 // MIDDLEWARE
@@ -45,16 +55,14 @@ const authLimiter = rateLimit({
 app.use("/api/users/login", authLimiter);
 app.use("/api/users/register", authLimiter);
 
-// ❌ DO NOT LIMIT THESE (IMPORTANT)
-// /api/alerts → SOS
-// /api/location → live tracking
-// /api/evidence → uploads
-
 // ===============================
-// STATIC VIDEO ACCESS
+// STATIC VIDEO ACCESS (FIXED)
 // ===============================
 
-app.use("/uploads", express.static("uploads"));
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "uploads"))
+);
 
 // ===============================
 // MONGODB CONNECTION

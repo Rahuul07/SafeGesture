@@ -22,8 +22,8 @@ export const uploadEvidence = async(req,res)=>{
             });
         }
 
-        // FRONTEND ACCESSIBLE VIDEO URL
-        const videoUrl = `/uploads/videos/${req.file.filename}`;
+        // ✅ FULL ACCESSIBLE VIDEO URL (FIXED)
+        const videoUrl = `${req.protocol}://${req.get("host")}/uploads/videos/${req.file.filename}`;
 
         const evidence = await Evidence.create({
             userId:req.user._id,
@@ -47,7 +47,6 @@ export const uploadEvidence = async(req,res)=>{
     }
 
 };
-
 
 
 

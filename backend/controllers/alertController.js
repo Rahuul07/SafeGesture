@@ -1,5 +1,6 @@
 import Alert from "../models/Alert.js";
-import axios from "axios"; // ✅ ADDED
+import axios from "axios";
+import Evidence from "../models/Evidence.js"; // ✅ ADDED
 
 let io;
 
@@ -39,38 +40,48 @@ export const createAlert = async (req, res) => {
       }
     }
 
-    // ✅ GET FULL ADDRESS FROM LAT/LNG
-    let locationName = "Unknown Location";
+    // ===============================
+    // GET FULL ADDRESS
+    // ===============================
+
+    let locationName = "Fetching location...";
 
     try {
       const geoRes = await axios.get(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
       );
 
-      locationName = geoRes.data.display_name;
+      locationName = geoRes.data.display_name || "Unknown Location";
 
     } catch (err) {
       console.log("Geo error:", err.message);
+      locationName = "Unknown Location";
     }
 
-    // ✅ CREATE ALERT
+    // ===============================
+    // CREATE ALERT
+    // ===============================
+
     const alert = await Alert.create({
       userId: req.user._id,
       location: {
         latitude,
         longitude
       },
-      locationName, // ✅ NEW FIELD
+      locationName,
       status: "ACTIVE"
     });
 
-    // ✅ EMIT REALTIME EVENT (structured)
+    // ===============================
+    // SOCKET EMIT
+    // ===============================
+
     if (io) {
       io.emit("newAlert", {
         _id: alert._id,
         userId: alert.userId,
         location: alert.location,
-        locationName: alert.locationName, // ✅ ADDED
+        locationName: alert.locationName,
         status: alert.status,
         createdAt: alert.createdAt
       });
@@ -94,16 +105,33 @@ export const createAlert = async (req, res) => {
 
 
 // ===============================
-// GET ACTIVE ALERTS (POLICE)
+// GET ACTIVE ALERTS (WITH VIDEO)
 // ===============================
 
 export const getActiveAlerts = async (req, res) => {
   try {
 
     const alerts = await Alert.find({ status: "ACTIVE" })
-      .populate("userId", "name phone email");
+      .populate("userId", "name phone email")
+      .lean();
 
-    res.json(alerts);
+    // ✅ ATTACH EVIDENCE TO EACH ALERT
+    const alertsWithEvidence = await Promise.all(
+      alerts.map(async (alert) => {
+
+        const evidence = await Evidence.findOne({
+          alertId: alert._id
+        });
+
+        return {
+          ...alert,
+          evidenceVideo: evidence ? evidence.videoUrl : null
+        };
+
+      })
+    );
+
+    res.json(alertsWithEvidence);
 
   } catch (error) {
 
@@ -156,7 +184,6 @@ export const resolveAlert = async (req, res) => {
     alert.status = "RESOLVED";
     await alert.save();
 
-    // ✅ REALTIME UPDATE
     if (io) {
       io.emit("alertResolved", {
         _id: alert._id,

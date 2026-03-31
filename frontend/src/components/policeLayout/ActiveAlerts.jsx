@@ -81,7 +81,7 @@ a._id === data._id ? { ...a, status:"RESOLVED" } : a
 socket.on("userLocationUpdate",(data)=>{
 setAlerts(prev =>
 prev.map(a =>
-a.userId === data.userId
+a.userId?._id === data.userId
 ? {
 ...a,
 location:{
@@ -183,9 +183,8 @@ transform:scale(1.05);
 
 {alerts.map((alert)=>{
 
-const videoUrl = alert.evidence
-? `http://localhost:5000/${alert.evidence.videoUrl}`
-: null;
+// ✅ FIXED VIDEO FIELD
+const videoUrl = alert.evidenceVideo;
 
 return(
 
@@ -207,7 +206,7 @@ transition={{duration:0.5}}
 
 <p>📞 {alert.userId?.phone}</p>
 
-<p>📍 {alert.locationName || "Unknown Location"}</p>
+<p>📍 {alert.locationName || "Fetching location..."}</p>
 
 <p>
 Status:{" "}

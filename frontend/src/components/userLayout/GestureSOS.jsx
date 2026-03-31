@@ -18,7 +18,9 @@ const token = localStorage.getItem("token");
 let holdTimer;
 
 
-/* GET LOCATION */
+/* ===============================
+GET LOCATION
+=============================== */
 
 const getLocation = ()=>{
 
@@ -43,9 +45,13 @@ lng:pos.coords.longitude
 
 
 
-/* START RECORDING */
+/* ===============================
+START RECORDING (FIXED)
+=============================== */
 
-const startRecording = async(alertId)=>{
+const startRecording = (alertId)=>{
+
+return new Promise(async (resolve,reject)=>{
 
 try{
 
@@ -57,7 +63,6 @@ audio:true
 streamRef.current = stream;
 
 /* SHOW CAMERA */
-
 videoRef.current.srcObject = stream;
 
 const mediaRecorder = new MediaRecorder(stream);
@@ -72,8 +77,6 @@ chunks.push(e.data);
 mediaRecorder.onstop = async ()=>{
 
 try{
-
-/* CREATE VIDEO */
 
 const blob = new Blob(chunks,{type:"video/webm"});
 
@@ -94,19 +97,21 @@ Authorization:`Bearer ${token}`,
 }
 );
 
-/* 🔥 STOP CAMERA + MIC (REAL HARDWARE STOP) */
+console.log("✅ Evidence uploaded");
+
+/* STOP CAMERA + MIC */
 
 if(streamRef.current){
 streamRef.current.getTracks().forEach(track => track.stop());
 }
 
-/* REMOVE VIDEO STREAM */
+/* REMOVE VIDEO */
 
 if(videoRef.current){
 videoRef.current.srcObject = null;
 }
 
-/* FINAL MESSAGE */
+/* SUCCESS MESSAGE */
 
 Swal.fire({
 icon:"success",
@@ -114,9 +119,13 @@ title:"Recording Completed 🎥",
 text:"Video captured & camera turned OFF"
 });
 
+/* RESOLVE AFTER COMPLETE */
+resolve();
+
 }catch(err){
 
 console.log("Upload error:",err);
+reject(err);
 
 }
 
@@ -127,7 +136,7 @@ console.log("Upload error:",err);
 mediaRecorder.start();
 setRecording(true);
 
-/* SHOW START MESSAGE */
+/* START MESSAGE */
 
 Swal.fire({
 icon:"info",
@@ -138,10 +147,8 @@ text:"Camera & microphone activated"
 /* STOP AFTER 15 SEC */
 
 setTimeout(()=>{
-
 mediaRecorder.stop();
 setRecording(false);
-
 },15000);
 
 }catch(err){
@@ -153,13 +160,18 @@ icon:"error",
 title:"Camera Access Denied"
 });
 
+reject(err);
+
 }
 
+});
 };
 
 
 
-/* LIVE TRACKING */
+/* ===============================
+LIVE TRACKING
+=============================== */
 
 const startLiveTracking = ()=>{
 
@@ -194,7 +206,9 @@ console.log("Location error:",err);
 
 
 
-/* TRIGGER SOS */
+/* ===============================
+TRIGGER SOS
+=============================== */
 
 const triggerSOS = async ()=>{
 
@@ -227,11 +241,11 @@ title:"SOS Triggered 🚨",
 text:"Emergency alert sent successfully"
 });
 
-/* START RECORDING */
+/* WAIT FOR RECORDING TO COMPLETE */
 
 await startRecording(alertId);
 
-/* START TRACKING */
+/* START LIVE TRACKING */
 
 startLiveTracking();
 
@@ -251,7 +265,9 @@ text:"Unable to trigger emergency"
 
 
 
-/* HOLD BUTTON WITH COUNTDOWN */
+/* ===============================
+HOLD BUTTON + COUNTDOWN
+=============================== */
 
 const handleHoldStart = ()=>{
 
@@ -282,6 +298,10 @@ setCountdown(null);
 
 
 
+/* ===============================
+UI
+=============================== */
+
 return(
 
 <>
@@ -304,6 +324,7 @@ box-shadow:0 20px 40px rgba(0,0,0,0.1);
 border:none;
 align-items:center;
 display:flex;
+flex-direction:column;
 }
 
 /* SOS BUTTON */
@@ -336,7 +357,7 @@ margin-top:20px;
 font-weight:bold;
 }
 
-/* RECORDING TEXT */
+/* RECORDING */
 
 .recording{
 color:red;
@@ -344,7 +365,7 @@ margin-top:10px;
 font-weight:bold;
 }
 
-/* CAMERA */
+/* VIDEO */
 
 .video-box{
 margin-top:25px;
@@ -383,10 +404,9 @@ onMouseUp={handleHoldEnd}
 onTouchStart={handleHoldStart}
 onTouchEnd={handleHoldEnd}
 >
-
 SOS
-
 </motion.button>
+
 
 {/* COUNTDOWN */}
 
@@ -394,11 +414,13 @@ SOS
 <div className="countdown">{countdown}</div>
 )}
 
+
 {/* RECORDING */}
 
 {recording && (
 <p className="recording">🔴 Recording...</p>
 )}
+
 
 <div className="video-box">
 <video ref={videoRef} autoPlay playsInline/>
