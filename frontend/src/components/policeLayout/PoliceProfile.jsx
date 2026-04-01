@@ -4,14 +4,14 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import Swal from "sweetalert2";
 import {
-FaUser,
+FaUserShield,
 FaEnvelope,
 FaPhone,
 FaEdit,
 FaSave
 } from "react-icons/fa";
 
-const UserProfile = () => {
+const PoliceProfile = () => {
 
 const [user,setUser] = useState(null);
 const [editMode,setEditMode] = useState(false);
@@ -27,20 +27,16 @@ const [preview,setPreview] = useState("");
 const token = localStorage.getItem("token");
 
 
-/* ===============================
-FETCH PROFILE
-=============================== */
+/* FETCH PROFILE */
 
-const fetchUserProfile = useCallback(async ()=>{
+const fetchProfile = useCallback(async ()=>{
 
 try{
 
 const res = await axios.get(
 "http://localhost:5000/api/users/profile",
 {
-headers:{
-Authorization:`Bearer ${token}`
-}
+headers:{ Authorization:`Bearer ${token}` }
 }
 );
 
@@ -51,11 +47,9 @@ name:res.data.name,
 phone:res.data.phone
 });
 
-// ✅ FIX IMAGE PATH
+// IMAGE FIX
 if(res.data.image){
 setPreview(`http://localhost:5000${res.data.image}`);
-}else{
-setPreview("");
 }
 
 }catch(err){
@@ -65,13 +59,11 @@ console.log(err);
 },[token]);
 
 useEffect(()=>{
-fetchUserProfile();
-},[fetchUserProfile]);
+fetchProfile();
+},[fetchProfile]);
 
 
-/* ===============================
-HANDLE INPUT
-=============================== */
+/* INPUT CHANGE */
 
 const handleChange = (e)=>{
 setFormData({
@@ -81,9 +73,7 @@ setFormData({
 };
 
 
-/* ===============================
-IMAGE CHANGE
-=============================== */
+/* IMAGE CHANGE */
 
 const handleImageChange = (e)=>{
 const file = e.target.files[0];
@@ -95,9 +85,7 @@ setPreview(URL.createObjectURL(file));
 };
 
 
-/* ===============================
-UPDATE PROFILE
-=============================== */
+/* UPDATE PROFILE */
 
 const handleUpdate = async ()=>{
 
@@ -115,21 +103,17 @@ await axios.put(
 "http://localhost:5000/api/users/update-profile",
 form,
 {
-headers:{
-Authorization:`Bearer ${token}`
-}
+headers:{ Authorization:`Bearer ${token}` }
 }
 );
 
-// ✅ REFRESH DATA AFTER UPDATE
-await fetchUserProfile();
+await fetchProfile();
 
 setEditMode(false);
 
-// ✅ SUCCESS POPUP
 Swal.fire({
 icon:"success",
-title:"Profile Updated Successfully ✅"
+title:"Police Profile Updated ✅"
 });
 
 }catch(err){
@@ -146,10 +130,6 @@ console.log(err);
 };
 
 
-/* ===============================
-UI
-=============================== */
-
 return(
 
 <>
@@ -158,17 +138,19 @@ return(
 
 .profile-page{
 min-height:100vh;
-background:linear-gradient(135deg,#f5f7fa,#c3cfe2);
+background:linear-gradient(135deg,#0f172a,#1e293b);
 padding:40px 20px;
+color:white;
 }
 
 .profile-card{
-background:white;
+background:#ffffff;
 border:none;
 border-radius:20px;
 padding:35px;
-box-shadow:0 15px 40px rgba(0,0,0,0.1);
+box-shadow:0 20px 50px rgba(0,0,0,0.4);
 text-align:center;
+color:black;
 }
 
 .profile-img{
@@ -177,8 +159,8 @@ height:120px;
 border-radius:50%;
 overflow:hidden;
 margin:0 auto 20px auto;
+border:4px solid #22c55e;
 cursor:pointer;
-border:4px solid #ff5e62;
 }
 
 .profile-img img{
@@ -193,11 +175,10 @@ align-items:center;
 gap:10px;
 margin:12px 0;
 font-size:16px;
-color:#444;
 }
 
 .icon{
-color:#ff5e62;
+color:#22c55e;
 }
 
 .edit-btn{
@@ -225,8 +206,6 @@ transition={{duration:0.6}}
 
 <Card className="profile-card">
 
-{/* IMAGE */}
-
 <label className="profile-img">
 
 <img
@@ -246,15 +225,14 @@ onChange={handleImageChange}
 
 </label>
 
-<h4>User Profile</h4>
+<h4>🚓 Police Profile</h4>
 
 {user ? (
 
 <div>
 
-{/* NAME */}
 <div className="info">
-<FaUser className="icon"/>
+<FaUserShield className="icon"/>
 <b>Name:</b>
 
 {editMode ? (
@@ -264,19 +242,15 @@ name="name"
 value={formData.name}
 onChange={handleChange}
 />
-) : (
-user.name
-)}
+) : user.name}
 
 </div>
 
-{/* EMAIL */}
 <div className="info">
 <FaEnvelope className="icon"/>
 <b>Email:</b> {user.email}
 </div>
 
-{/* PHONE */}
 <div className="info">
 <FaPhone className="icon"/>
 <b>Phone:</b>
@@ -288,14 +262,9 @@ name="phone"
 value={formData.phone}
 onChange={handleChange}
 />
-) : (
-user.phone
-)}
+) : user.phone}
 
 </div>
-
-
-{/* BUTTON */}
 
 {editMode ? (
 
@@ -321,11 +290,7 @@ onClick={()=>setEditMode(true)}
 
 </div>
 
-) : (
-
-<p>Loading profile...</p>
-
-)}
+) : <p>Loading...</p>}
 
 </Card>
 
@@ -345,4 +310,4 @@ onClick={()=>setEditMode(true)}
 
 };
 
-export default UserProfile;
+export default PoliceProfile;

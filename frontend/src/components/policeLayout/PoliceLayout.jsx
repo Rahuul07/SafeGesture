@@ -32,9 +32,7 @@ background:#0f172a;
 color:white;
 }
 
-.content{
-padding:20px;
-}
+
 `}</style>
 
 </div>

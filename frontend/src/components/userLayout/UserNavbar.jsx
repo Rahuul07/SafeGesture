@@ -7,7 +7,8 @@ FaTimes,
 FaHandPaper,
 FaMapMarkedAlt,
 FaAddressBook,
-FaUser
+FaUser,
+FaEdit
 } from "react-icons/fa";
 
 const UserNavbar = () => {
@@ -60,6 +61,11 @@ transition={{duration:0.4}}
 <NavLink to="/user/profile" onClick={()=>setMenuOpen(false)}>
 <FaUser/> Profile
 </NavLink>
+
+<NavLink to="/user/change-password" onClick={()=>setMenuOpen(false)}>
+<FaEdit/> Change Password
+</NavLink>
+
 
 
 </motion.div>

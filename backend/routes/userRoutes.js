@@ -12,6 +12,7 @@ import {
 } from "../controllers/userController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
+import { changePassword } from "../controllers/userController.js";
 
 const router = express.Router();
 
@@ -53,6 +54,9 @@ router.post("/add-contact", protect, addEmergencyContact);
 
 // UPDATE LOCATION
 router.put("/location", protect, updateLocation);
+
+// CHANGE PASSWORD
+router.put("/change-password", protect, changePassword);
 
 
 export default router;

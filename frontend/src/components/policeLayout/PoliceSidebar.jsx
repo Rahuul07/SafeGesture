@@ -5,7 +5,10 @@ FaMapMarkedAlt,
 FaBell,
 FaHistory,
 FaSignOutAlt,
-FaTimes
+FaTimes,
+FaUser,
+FaEdit,
+
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 
@@ -16,7 +19,9 @@ const navigate = useNavigate();
 const menu = [
 { name:"Dashboard", icon:<FaMapMarkedAlt/>, path:"/police/dashboard" },
 { name:"Active Alerts", icon:<FaBell/>, path:"/police/active-alerts" },
-{ name:"History", icon:<FaHistory/>, path:"/police/history" }
+{ name:"History", icon:<FaHistory/>, path:"/police/history" },
+{ name:"Profile", icon:<FaUser/>, path:"/police/profile" },
+{ name:"Change Password", icon:<FaEdit/>, path:"/police/change-password" }
 ];
 
 return (

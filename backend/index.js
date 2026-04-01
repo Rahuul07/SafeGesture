@@ -26,7 +26,7 @@ const app = express();
 
 
 // ===============================
-// PATH FIX (VERY IMPORTANT)
+// PATH FIX
 // ===============================
 
 const __filename = fileURLToPath(import.meta.url);
@@ -42,7 +42,18 @@ app.use(express.json());
 
 
 // ===============================
-// SMART RATE LIMITING (FIXED)
+// ✅ STATIC FILES (ONLY ONE TIME)
+// ===============================
+
+const uploadsPath = path.join(__dirname, "uploads");
+
+app.use("/uploads", express.static(uploadsPath));
+
+console.log("📁 Serving uploads from:", uploadsPath);
+
+
+// ===============================
+// RATE LIMIT
 // ===============================
 
 const authLimiter = rateLimit({
@@ -58,40 +69,19 @@ app.use("/api/users/register", authLimiter);
 
 
 // ===============================
-// 🔥 STATIC VIDEO ACCESS (FINAL FIX)
-// ===============================
-
-// 👉 This ensures correct absolute path
-const uploadsPath = path.join(__dirname, "uploads");
-
-app.use("/uploads", express.static(uploadsPath));
-
-console.log("📁 Serving uploads from:", uploadsPath);
-
-
-// ===============================
-// MONGODB CONNECTION
+// DATABASE
 // ===============================
 
 mongoose.connect(process.env.MONGO_URI)
-.then(() => {
-  console.log("MongoDB Atlas Connected 👽");
-})
-.catch((error) => {
-  console.log(error);
-});
+.then(() => console.log("MongoDB Atlas Connected 👽"))
+.catch((error) => console.log(error));
 
 
 // ===============================
-// CREATE HTTP SERVER
+// SERVER + SOCKET
 // ===============================
 
 const server = http.createServer(app);
-
-
-// ===============================
-// SOCKET.IO SERVER
-// ===============================
 
 const io = new Server(server, {
   cors: {
@@ -101,11 +91,6 @@ const io = new Server(server, {
 
 setSocket(io);
 setLocationSocket(io);
-
-
-// ===============================
-// SOCKET CONNECTION
-// ===============================
 
 io.on("connection", (socket) => {
   console.log("Client Connected:", socket.id);
@@ -117,7 +102,7 @@ io.on("connection", (socket) => {
 
 
 // ===============================
-// API ROUTES
+// ROUTES
 // ===============================
 
 app.use("/api/users", userRoutes);
@@ -129,7 +114,7 @@ app.use("/api/evidence", evidenceRoutes);
 
 
 // ===============================
-// ROOT ROUTE
+// ROOT
 // ===============================
 
 app.get("/", (req, res) => {

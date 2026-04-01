@@ -16,11 +16,15 @@ import GestureSOS from "./components/userLayout/GestureSOS";
 import UserProfile from "./components/userLayout/UserProfile";
 import EmergencyContact from "./components/userLayout/EmergencyContacts";
 import LiveTracking from "./components/userLayout/LiveTracking";
+import ChangePassword from "./components/userLayout/ChangePassword";
 
 // POLICE
 import PoliceLayout from "./components/policeLayout/PoliceLayout";
 import PoliceDashboard from "./components/policeLayout/PoliceDashboard";
 import ActiveAlerts from "./components/policeLayout/ActiveAlerts";
+import PoliceProfile from "./components/policeLayout/PoliceProfile";
+import ChangePassword1 from "./components/policeLayout/ChangePassword";
+
 
 // ✅ ADMIN (ADD THESE FILES)
 import AdminLayout from "./components/adminLayout/AdminLayout";
@@ -29,6 +33,9 @@ import AdminDashboard from "./components/adminLayout/AdminDashboard";
 // 🔐 PROTECTED ROUTE
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute"; 
+
+
+
 
 
 function App() {
@@ -80,6 +87,7 @@ function App() {
         <Route path="profile" element={<UserProfile />} />
         <Route path="live-tracking" element={<LiveTracking />} />
         <Route path="emergency-contact" element={<EmergencyContact />} />
+        <Route path="change-password" element={<ChangePassword />} />
 
       </Route>
 
@@ -95,6 +103,9 @@ function App() {
 
         <Route path="dashboard" element={<PoliceDashboard />} />
          <Route path="active-alerts" element={<ActiveAlerts />} />
+         <Route path="profile" element={<PoliceProfile />} />
+         <Route path="change-password" element={<ChangePassword1 />} />
+
       </Route>
 
       {/* ---------------- ADMIN AREA ---------------- */}

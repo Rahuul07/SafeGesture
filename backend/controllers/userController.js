@@ -37,8 +37,10 @@ const generateToken = (id) => {
 };
 
 
-
+// ===============================
 // REGISTER USER
+// ===============================
+
 export const registerUser = async (req, res) => {
 
   try {
@@ -63,57 +65,16 @@ export const registerUser = async (req, res) => {
       phone
     });
 
-
-    // SEND WELCOME EMAIL
+    // SEND EMAIL
     const mailOptions = {
       from: `"SafeGesture AI" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Welcome to SafeGesture AI 🛡️",
-      html: `
-      <div style="font-family:Arial;padding:20px">
-      
-      <h2>Welcome ${name} 👋</h2>
-      
-      <p>
-      Your account has been successfully created in 
-      <b>SafeGesture AI Women Safety System</b>.
-      </p>
-
-      <p>
-      SafeGesture helps protect users using gesture-based SOS alerts
-      and intelligent safety monitoring.
-      </p>
-
-      <h3>Platform Features</h3>
-
-      <ul>
-      <li>🛡️ Gesture-based SOS trigger</li>
-      <li>📍 Live location tracking</li>
-      <li>📹 Automatic evidence recording</li>
-      <li>🚓 Instant police alerts</li>
-      </ul>
-
-      <p>
-      You can now login and start using the platform.
-      </p>
-
-      <br/>
-
-      <p>
-      Stay safe,<br/>
-      <b>SafeGesture AI Team</b>
-      </p>
-
-      </div>
-      `
+      html: `<h2>Welcome ${name} 👋</h2>`
     };
 
-  
-
     const info = await transporter.sendMail(mailOptions);
-
     console.log("Email sent:", info.response);
-
 
     res.status(201).json({
       message: "User registered successfully"
@@ -130,22 +91,23 @@ export const registerUser = async (req, res) => {
 };
 
 
-
+// ===============================
 // LOGIN USER
+// ===============================
+
 export const loginUser = async (req, res) => {
 
   try {
 
     const { email, password, role } = req.body;
 
-    const user = await User.findOne({ email,role });  // ✅ CHECK ROLE DURING LOGIN
+    const user = await User.findOne({ email, role });
 
     if (!user) {
       return res.status(401).json({
         message: `No ${role} account found with this email`
       });
     }
-
 
     if (user && (await bcrypt.compare(password, user.password))) {
 
@@ -154,7 +116,7 @@ export const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,   // ✅ VERY IMPORTANT
+        role: user.role,
         token: generateToken(user._id)
       });
 
@@ -177,7 +139,10 @@ export const loginUser = async (req, res) => {
 };
 
 
+// ===============================
 // GET USER PROFILE
+// ===============================
+
 export const getUserProfile = async (req, res) => {
 
   try {
@@ -185,15 +150,11 @@ export const getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id).select("-password");
 
     if (user) {
-
       res.json(user);
-
     } else {
-
       res.status(404).json({
         message: "User not found"
       });
-
     }
 
   } catch (error) {
@@ -207,8 +168,10 @@ export const getUserProfile = async (req, res) => {
 };
 
 
+// ===============================
+// UPDATE USER PROFILE (FINAL FIX)
+// ===============================
 
-// UPDATE USER PROFILE (ONLY NAME AND PHONE)
 export const updateUserProfile = async (req, res) => {
 
   try {
@@ -224,8 +187,31 @@ export const updateUserProfile = async (req, res) => {
     const { name, phone } = req.body;
 
     if (name) user.name = name;
-
     if (phone) user.phone = phone;
+
+    // ===============================
+    // 🔥 IMAGE UPDATE + DELETE OLD
+    // ===============================
+
+    if (req.file) {
+
+      const fs = await import("fs");
+
+      // DELETE OLD IMAGE
+      if (user.image) {
+
+        const oldPath = `.${user.image}`; // ./uploads/profile/file.jpg
+
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+          console.log("🗑 Old image deleted:", oldPath);
+        }
+
+      }
+
+      // SAVE NEW IMAGE
+      user.image = `/uploads/profile/${req.file.filename}`;
+    }
 
     const updatedUser = await user.save();
 
@@ -235,11 +221,14 @@ export const updateUserProfile = async (req, res) => {
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
-        phone: updatedUser.phone
+        phone: updatedUser.phone,
+        image: updatedUser.image
       }
     });
 
   } catch (error) {
+
+    console.error("Update Profile Error:", error);
 
     res.status(500).json({
       message: error.message
@@ -250,8 +239,10 @@ export const updateUserProfile = async (req, res) => {
 };
 
 
-
+// ===============================
 // ADD EMERGENCY CONTACT
+// ===============================
+
 export const addEmergencyContact = async (req, res) => {
 
   try {
@@ -283,8 +274,10 @@ export const addEmergencyContact = async (req, res) => {
 };
 
 
-
+// ===============================
 // UPDATE LOCATION
+// ===============================
+
 export const updateLocation = async (req, res) => {
 
   try {
@@ -303,6 +296,53 @@ export const updateLocation = async (req, res) => {
     res.json({
       message: "Location updated",
       location: user.location
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+// ===============================
+// CHANGE PASSWORD
+// ===============================
+
+export const changePassword = async (req, res) => {
+
+  try {
+
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    // CHECK OLD PASSWORD
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Old password is incorrect"
+      });
+    }
+
+    // HASH NEW PASSWORD
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    await user.save();
+
+    res.json({
+      message: "Password changed successfully 🔐"
     });
 
   } catch (error) {
