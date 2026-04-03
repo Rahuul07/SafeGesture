@@ -65,16 +65,56 @@ export const registerUser = async (req, res) => {
       phone
     });
 
-    // SEND EMAIL
+   // SEND WELCOME EMAIL
     const mailOptions = {
       from: `"SafeGesture AI" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Welcome to SafeGesture AI 🛡️",
-      html: `<h2>Welcome ${name} 👋</h2>`
+      html: `
+      <div style="font-family:Arial;padding:20px">
+      
+      <h2>Welcome ${name} 👋</h2>
+      
+      <p>
+      Your account has been successfully created in 
+      <b>SafeGesture AI Women Safety System</b>.
+      </p>
+
+      <p>
+      SafeGesture helps protect users using gesture-based SOS alerts
+      and intelligent safety monitoring.
+      </p>
+
+      <h3>Platform Features</h3>
+
+      <ul>
+      <li>🛡️ Gesture-based SOS trigger</li>
+      <li>📍 Live location tracking</li>
+      <li>📹 Automatic evidence recording</li>
+      <li>🚓 Instant police alerts</li>
+      </ul>
+
+      <p>
+      You can now login and start using the platform.
+      </p>
+
+      <br/>
+
+      <p>
+      Stay safe,<br/>
+      <b>SafeGesture AI Team</b>
+      </p>
+
+      </div>
+      `
     };
 
+  
+
     const info = await transporter.sendMail(mailOptions);
+
     console.log("Email sent:", info.response);
+
 
     res.status(201).json({
       message: "User registered successfully"
@@ -343,6 +383,108 @@ export const changePassword = async (req, res) => {
 
     res.json({
       message: "Password changed successfully 🔐"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+// ===============================
+// FORGOT PASSWORD - SEND OTP
+// ===============================
+
+export const sendResetOtp = async (req, res) => {
+
+  try {
+
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
+    // 🔥 GENERATE OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.resetOtp = otp;
+    user.otpExpire = Date.now() + 5 * 60 * 1000; // 5 min
+
+    await user.save();
+
+    // 📧 SEND EMAIL
+    await transporter.sendMail({
+      from: `"SafeGesture AI" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Password Reset OTP 🔐",
+      html: `
+        <h2>Your OTP is: ${otp}</h2>
+        <p>This OTP is valid for 5 minutes</p>
+      `
+    });
+
+    res.json({
+      message: "OTP sent to email"
+    });
+
+  } catch (error) {
+
+    console.error("OTP Error:", error);
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+
+// ===============================
+// RESET PASSWORD WITH OTP
+// ===============================
+
+export const resetPassword = async (req, res) => {
+
+  try {
+
+    const { email, otp, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user || user.resetOtp !== otp) {
+      return res.status(400).json({
+        message: "Invalid OTP"
+      });
+    }
+
+    if (user.otpExpire < Date.now()) {
+      return res.status(400).json({
+        message: "OTP expired"
+      });
+    }
+
+    // 🔐 HASH NEW PASSWORD
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    // CLEAR OTP
+    user.resetOtp = null;
+    user.otpExpire = null;
+
+    await user.save();
+
+    res.json({
+      message: "Password reset successful ✅"
     });
 
   } catch (error) {

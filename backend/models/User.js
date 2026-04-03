@@ -40,10 +40,21 @@ const userSchema = new mongoose.Schema(
       default: "user"
     },
 
-    // ✅ NEW FIELD (PROFILE IMAGE)
+    // ✅ PROFILE IMAGE
     image: {
       type: String,
       default: ""
+    },
+
+    // 🔥 NEW (FOR FORGOT PASSWORD OTP)
+    resetOtp: {
+      type: String,
+      default: null
+    },
+
+    otpExpire: {
+      type: Date,
+      default: null
     },
 
     emergencyContacts: [contactSchema],

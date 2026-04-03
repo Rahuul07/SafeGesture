@@ -16,6 +16,16 @@ email:"",
 password:""
 });
 
+// 🔥 FORGOT PASSWORD STATES
+const [showForgot,setShowForgot] = useState(false);
+const [otpStep,setOtpStep] = useState(false);
+
+const [resetData,setResetData] = useState({
+email:"",
+otp:"",
+newPassword:""
+});
+
 // UI states (same)
 const [selectedRole, setSelectedRole] = useState("user");
 const [showRoleBox, setShowRoleBox] = useState(false);
@@ -27,21 +37,31 @@ setFormData({
 });
 };
 
+const handleResetChange = (e)=>{
+setResetData({
+...resetData,
+[e.target.name]:e.target.value
+});
+};
+
 const showPopup = (msg,color="success")=>{
 
 Swal.fire({
-  icon: color === "success" ? "success" : "error",
-  title: msg,
-  showConfirmButton: true,
-  confirmButtonColor: "#ff7a18",
-  background: "#1f2937",
-  color: "white",
-  backdrop: `rgba(0,0,0,0.7)`
+icon: color === "success" ? "success" : "error",
+title: msg,
+showConfirmButton: true,
+confirmButtonColor: "#ff7a18",
+background: "#1f2937",
+color: "white",
+backdrop: `rgba(0,0,0,0.7)`
 });
 
 };
 
-// ✅ UPDATED: now sends role
+// ===============================
+// LOGIN (UNCHANGED)
+// ===============================
+
 const handleSubmit = async (role)=>{
 
 try{
@@ -50,7 +70,7 @@ const res = await axios.post(
 "http://localhost:5000/api/users/login",
 {
 ...formData,
-role: role || selectedRole   // ✅ IMPORTANT FIX
+role: role || selectedRole
 }
 );
 
@@ -59,20 +79,18 @@ localStorage.setItem("role",res.data.role);
 
 showPopup("Login Successful ✅","success");
 
-// close panel
 setShowRoleBox(false);
 
-// redirect
 setTimeout(()=>{
 
 if(res.data.role === "admin"){
-  navigate("/admin/dashboard");
+navigate("/admin/dashboard");
 }
 else if(res.data.role === "police"){
-  navigate("/police/dashboard");
+navigate("/police/dashboard");
 }
 else{
-  navigate("/user/dashboard");
+navigate("/user/dashboard");
 }
 
 },2000);
@@ -88,6 +106,50 @@ showPopup("Invalid Email or Password","danger");
 
 }
 
+};
+
+// ===============================
+// SEND OTP (FIXED)
+// ===============================
+
+const sendOtp = async ()=>{
+try{
+
+await axios.post(
+"http://localhost:5000/api/users/forgot-password",
+{ email: resetData.email }
+);
+
+showPopup("OTP Sent to Email 📩");
+
+// ❌ DO NOT CLEAR EMAIL (IMPORTANT)
+setOtpStep(true);
+
+}catch(err){
+showPopup(err.response?.data?.message || "Error","danger");
+}
+};
+
+// ===============================
+// RESET PASSWORD
+// ===============================
+
+const resetPassword = async ()=>{
+try{
+
+await axios.post(
+"http://localhost:5000/api/users/reset-password",
+resetData
+);
+
+showPopup("Password Reset Successful ✅");
+
+setShowForgot(false);
+setOtpStep(false);
+
+}catch(err){
+showPopup(err.response?.data?.message || "Error","danger");
+}
 };
 
 return(
@@ -212,6 +274,7 @@ font-weight:bold;
 initial={{opacity:0,y:50}}
 animate={{opacity:1,y:0}}
 transition={{duration:0.8}}
+
 >
 
 <Card className="login-card">
@@ -223,9 +286,7 @@ Login to SafeGesture
 <Form onSubmit={(e)=>e.preventDefault()}>
 
 <Form.Group className="mb-3">
-<Form.Label>
-<FaEnvelope/> Email
-</Form.Label>
+<Form.Label><FaEnvelope/> Email</Form.Label>
 <Form.Control
 type="email"
 placeholder="Enter your email"
@@ -237,9 +298,7 @@ required
 </Form.Group>
 
 <Form.Group className="mb-3">
-<Form.Label>
-<FaLock/> Password
-</Form.Label>
+<Form.Label><FaLock/> Password</Form.Label>
 <Form.Control
 type="password"
 placeholder="Enter password"
@@ -250,59 +309,45 @@ required
 />
 </Form.Group>
 
+<p
+style={{cursor:"pointer",color:"#ffd200"}}
+onClick={()=>setShowForgot(true)}
+>
+Forgot Password?
+</p>
+
 <div style={{ position:"relative" }}>
 
 <Button
 type="button"
 className="w-100 login-btn"
 onClick={()=>setShowRoleBox(!showRoleBox)}
+
 >
-Login
-</Button>
+
+Login </Button>
 
 <AnimatePresence>
 {showRoleBox && (
-<motion.div
-className="role-box"
-initial={{x:50,opacity:0}}
-animate={{x:0,opacity:1}}
-exit={{x:50,opacity:0}}
-transition={{duration:0.3}}
->
+<motion.div className="role-box">
 
-<div
-className={`role-item ${selectedRole==="user" && "role-active"}`}
-onClick={()=>{
-setSelectedRole("user");
-handleSubmit("user");
-}}
->
+<div className={`role-item ${selectedRole==="user" && "role-active"}`}
+onClick={()=>{setSelectedRole("user");handleSubmit("user");}}>
 <FaUser/> User
 </div>
 
-<div
-className={`role-item ${selectedRole==="police" && "role-active"}`}
-onClick={()=>{
-setSelectedRole("police");
-handleSubmit("police");
-}}
->
+<div className={`role-item ${selectedRole==="police" && "role-active"}`}
+onClick={()=>{setSelectedRole("police");handleSubmit("police");}}>
 <MdLocalPolice/> Police
 </div>
 
-<div
-className={`role-item ${selectedRole==="admin" && "role-active"}`}
-onClick={()=>{
-setSelectedRole("admin");
-handleSubmit("admin");
-}}
->
+<div className={`role-item ${selectedRole==="admin" && "role-active"}`}
+onClick={()=>{setSelectedRole("admin");handleSubmit("admin");}}>
 <FaUserShield/> Admin
 </div>
 
 </motion.div>
-)}
-</AnimatePresence>
+)} </AnimatePresence>
 
 </div>
 
@@ -310,10 +355,8 @@ handleSubmit("admin");
 
 <p className="text-center mt-3">
 Don't have an account?{" "}
-<span
-style={{cursor:"pointer",color:"#ffd200"}}
-onClick={()=>navigate("/register")}
->
+<span style={{cursor:"pointer",color:"#ffd200"}}
+onClick={()=>navigate("/register")}>
 Register
 </span>
 </p>
@@ -327,6 +370,100 @@ Register
 </Container>
 
 </div>
+
+{/* 🔥 RESET PASSWORD POPUP */}
+
+{showForgot && (
+
+<div style={{
+position:"fixed",
+top:0,left:0,right:0,bottom:0,
+background:"rgba(0,0,0,0.75)",
+display:"flex",
+alignItems:"center",
+justifyContent:"center",
+zIndex:999
+}}>
+
+<motion.div
+initial={{scale:0.7,opacity:0}}
+animate={{scale:1,opacity:1}}
+transition={{duration:0.4}}
+style={{
+background:"linear-gradient(135deg,#0f2027,#203a43,#2c5364)",
+padding:"35px",
+borderRadius:"25px",
+width:"380px",
+color:"white",
+boxShadow:"0 20px 60px rgba(0,0,0,0.6)",
+backdropFilter:"blur(20px)",
+border:"1px solid rgba(255,255,255,0.1)"
+}}
+
+>
+
+<h4 style={{textAlign:"center",marginBottom:"20px"}}>
+🔐 Reset Password
+</h4>
+
+{!otpStep ? (
+<> <input
+className="form-control mb-3"
+placeholder="Enter Email"
+name="email"
+value={resetData.email}
+onChange={handleResetChange}
+/>
+
+<Button
+className="w-100 login-btn"
+onClick={sendOtp}
+
+>
+
+Send OTP </Button>
+</>
+) : (
+<> <input
+className="form-control mb-3"
+placeholder="Enter OTP"
+name="otp"
+value={resetData.otp}
+onChange={handleResetChange}
+/>
+
+<input
+className="form-control mb-3"
+placeholder="New Password"
+name="newPassword"
+type="password"
+value={resetData.newPassword}
+onChange={handleResetChange}
+/>
+
+<Button
+className="w-100 login-btn"
+onClick={resetPassword}
+
+>
+
+Reset Password </Button>
+</>
+)}
+
+<Button
+className="w-100 mt-3"
+variant="danger"
+onClick={()=>setShowForgot(false)}
+
+>
+
+Close </Button>
+
+</motion.div>
+
+</div>
+)}
 
 </>
 );

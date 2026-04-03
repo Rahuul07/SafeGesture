@@ -13,6 +13,7 @@ import {
 
 import { protect } from "../middleware/authMiddleware.js";
 import { changePassword } from "../controllers/userController.js";
+import { sendResetOtp, resetPassword } from "../controllers/userController.js";
 
 const router = express.Router();
 
@@ -58,5 +59,10 @@ router.put("/location", protect, updateLocation);
 // CHANGE PASSWORD
 router.put("/change-password", protect, changePassword);
 
+// FORGOT PASSWORD
+router.post("/forgot-password", sendResetOtp);
+
+// RESET PASSWORD
+router.post("/reset-password", resetPassword);
 
 export default router;

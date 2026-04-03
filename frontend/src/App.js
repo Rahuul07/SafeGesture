@@ -17,6 +17,7 @@ import UserProfile from "./components/userLayout/UserProfile";
 import EmergencyContact from "./components/userLayout/EmergencyContacts";
 import LiveTracking from "./components/userLayout/LiveTracking";
 import ChangePassword from "./components/userLayout/ChangePassword";
+import MyAlerts from "./components/userLayout/MyAlerts";
 
 // POLICE
 import PoliceLayout from "./components/policeLayout/PoliceLayout";
@@ -33,6 +34,7 @@ import AdminDashboard from "./components/adminLayout/AdminDashboard";
 // 🔐 PROTECTED ROUTE
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute"; 
+
 
 
 
@@ -88,6 +90,7 @@ function App() {
         <Route path="live-tracking" element={<LiveTracking />} />
         <Route path="emergency-contact" element={<EmergencyContact />} />
         <Route path="change-password" element={<ChangePassword />} />
+        <Route path="my-alerts" element={<MyAlerts />} />
 
       </Route>
 

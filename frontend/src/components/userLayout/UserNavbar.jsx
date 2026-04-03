@@ -8,7 +8,8 @@ FaHandPaper,
 FaMapMarkedAlt,
 FaAddressBook,
 FaUser,
-FaEdit
+FaEdit,
+FaHistory   // ✅ ADDED
 } from "react-icons/fa";
 
 const UserNavbar = () => {
@@ -35,7 +36,6 @@ return(
 
 </div>
 
-
 {/* MENU LIST */}
 
 <motion.div
@@ -43,33 +43,23 @@ className={`menu-list ${menuOpen ? "show" : ""}`}
 initial={{height:0,opacity:0}}
 animate={menuOpen ? {height:"auto",opacity:1} : {height:0,opacity:0}}
 transition={{duration:0.4}}
+
 >
 
+<NavLink to="/user/gesture-sos" onClick={()=>setMenuOpen(false)}> <FaHandPaper/> Gesture SOS </NavLink>
 
-<NavLink to="/user/gesture-sos" onClick={()=>setMenuOpen(false)}>
-<FaHandPaper/> Gesture SOS
-</NavLink>
+<NavLink to="/user/live-tracking" onClick={()=>setMenuOpen(false)}> <FaMapMarkedAlt/> Live Tracking </NavLink>
 
-<NavLink to="/user/live-tracking" onClick={()=>setMenuOpen(false)}>
-<FaMapMarkedAlt/> Live Tracking
-</NavLink>
+<NavLink to="/user/emergency-contact" onClick={()=>setMenuOpen(false)}> <FaAddressBook/> Emergency Contacts </NavLink>
 
-<NavLink to="/user/emergency-contact" onClick={()=>setMenuOpen(false)}>
-<FaAddressBook/> Emergency Contacts
-</NavLink>
+{/* ✅ NEW MY ALERTS PAGE */}
+<NavLink to="/user/my-alerts" onClick={()=>setMenuOpen(false)}> <FaHistory/> My Alerts </NavLink>
 
-<NavLink to="/user/profile" onClick={()=>setMenuOpen(false)}>
-<FaUser/> Profile
-</NavLink>
+<NavLink to="/user/profile" onClick={()=>setMenuOpen(false)}> <FaUser/> Profile </NavLink>
 
-<NavLink to="/user/change-password" onClick={()=>setMenuOpen(false)}>
-<FaEdit/> Change Password
-</NavLink>
-
-
+<NavLink to="/user/change-password" onClick={()=>setMenuOpen(false)}> <FaEdit/> Change Password </NavLink>
 
 </motion.div>
-
 
 <style>{`
 
