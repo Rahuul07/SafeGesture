@@ -14,38 +14,32 @@ const router = express.Router();
 
 
 // ===============================
-// 🚨 SOS ROUTE (HIGH PRIORITY)
+// 🚨 SOS ROUTE (CRITICAL - NO LIMIT)
 // ===============================
-
-// NEVER rate limit this route
 router.post("/sos", protect, createAlert);
 
 
 // ===============================
-// USER ALERT HISTORY
+// 👤 USER ALERT HISTORY
 // ===============================
-
 router.get("/my-alerts", protect, getUserAlerts);
 
 
 // ===============================
-// POLICE FETCH ACTIVE ALERTS
+// 👮 POLICE - ACTIVE ALERTS
 // ===============================
-
 router.get("/active", protect, getActiveAlerts);
 
 
 // ===============================
-// POLICE FETCH ALL ALERTS
+// 👮 POLICE - ALL ALERTS
 // ===============================
-
-
 router.get("/all", protect, getAllAlerts);
 
-// ===============================
-// POLICE RESOLVE ALERT
-// ===============================
 
+// ===============================
+// 👮 POLICE - RESOLVE ALERT
+// ===============================
 router.put("/resolve/:id", protect, resolveAlert);
 
 

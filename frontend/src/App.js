@@ -22,9 +22,13 @@ import MyAlerts from "./components/userLayout/MyAlerts";
 // POLICE
 import PoliceLayout from "./components/policeLayout/PoliceLayout";
 import PoliceDashboard from "./components/policeLayout/PoliceDashboard";
+import TotalAlerts from "./components/policeLayout/TotalAlerts";
 import ActiveAlerts from "./components/policeLayout/ActiveAlerts";
+import ResolvedAlerts from "./components/policeLayout/ResolvedAlerts";
 import PoliceProfile from "./components/policeLayout/PoliceProfile";
 import ChangePassword1 from "./components/policeLayout/ChangePassword";
+
+
 
 
 // ✅ ADMIN (ADD THESE FILES)
@@ -34,6 +38,7 @@ import AdminDashboard from "./components/adminLayout/AdminDashboard";
 // 🔐 PROTECTED ROUTE
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute"; 
+
 
 
 
@@ -108,6 +113,8 @@ function App() {
          <Route path="active-alerts" element={<ActiveAlerts />} />
          <Route path="profile" element={<PoliceProfile />} />
          <Route path="change-password" element={<ChangePassword1 />} />
+         <Route path="total-alerts" element={<TotalAlerts />} />
+         <Route path="resolved-alerts" element={<ResolvedAlerts />} />
 
       </Route>
 

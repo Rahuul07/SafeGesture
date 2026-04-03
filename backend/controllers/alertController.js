@@ -16,12 +16,11 @@ export const setSocket = (socketIo) => {
 
 export const createAlert = async (req, res) => {
   try {
-
     const { latitude, longitude } = req.body;
 
     if (!latitude || !longitude) {
       return res.status(400).json({
-        message: "Location is required"
+        message: "Location is required",
       });
     }
 
@@ -34,42 +33,43 @@ export const createAlert = async (req, res) => {
 
       if (diff < 10000) {
         return res.status(429).json({
-          message: "Please wait before triggering SOS again"
+          message: "Please wait before triggering SOS again",
         });
       }
     }
 
     // ===============================
-    // GET ADDRESS (FINAL FIX 🔥)
+    // GET ADDRESS
     // ===============================
 
-    let locationName = "Unknown Location";
+    let locationName = "";
 
     try {
-
       const geoRes = await axios.get(
         "https://nominatim.openstreetmap.org/reverse",
         {
           params: {
             format: "json",
             lat: latitude,
-            lon: longitude
+            lon: longitude,
           },
           headers: {
-            "User-Agent": "SafeGestureApp/1.0"
-          }
+            "User-Agent": "SafeGestureApp/1.0",
+          },
         }
       );
 
       if (geoRes.data && geoRes.data.display_name) {
         locationName = geoRes.data.display_name;
       }
-
     } catch (err) {
-      console.log("❌ Geo error:", err.message);
+      console.log("Geo error:", err.message);
     }
 
-    console.log("📍 Location:", locationName); // DEBUG
+    // FINAL FALLBACK
+    if (!locationName) {
+      locationName = `${latitude}, ${longitude}`;
+    }
 
     // ===============================
     // CREATE ALERT
@@ -79,7 +79,7 @@ export const createAlert = async (req, res) => {
       userId: req.user._id,
       location: { latitude, longitude },
       locationName,
-      status: "ACTIVE"
+      status: "ACTIVE",
     });
 
     // SOCKET
@@ -88,65 +88,54 @@ export const createAlert = async (req, res) => {
     }
 
     res.status(201).json({
-      message: "SOS Alert Triggered Successfully 🚨",
-      alert
+      message: "SOS Alert Triggered Successfully",
+      alert,
     });
 
   } catch (error) {
     console.error("SOS ERROR:", error);
     res.status(500).json({
-      message: "Failed to trigger SOS"
+      message: "Failed to trigger SOS",
     });
   }
 };
 
 
 // ===============================
-// GET ACTIVE ALERTS (VIDEO FIX 🔥)
+// GET ACTIVE ALERTS
 // ===============================
 
 export const getActiveAlerts = async (req, res) => {
   try {
-
     const alerts = await Alert.find({ status: "ACTIVE" })
       .populate("userId", "name phone email")
       .lean();
 
-    const alertIds = alerts.map(a => a._id);
+    const alertIds = alerts.map((a) => a._id);
 
-    // GET ALL EVIDENCE
     const evidences = await Evidence.find({
-      alertId: { $in: alertIds }
+      alertId: { $in: alertIds },
     });
 
-    // MAP EVIDENCE
-    const alertsWithEvidence = alerts.map(alert => {
-
+    const alertsWithEvidence = alerts.map((alert) => {
       const evidence = evidences.find(
-        e => e.alertId.toString() === alert._id.toString()
+        (e) => e.alertId.toString() === alert._id.toString()
       );
-
-      if (evidence) {
-        console.log("🎥 Found video:", evidence.videoUrl); // DEBUG
-      }
 
       return {
         ...alert,
         evidence: evidence
-          ? {
-              videoUrl: evidence.videoUrl   // ✅ IMPORTANT FIX
-            }
-          : null
+          ? { videoUrl: evidence.videoUrl }
+          : null,
       };
-
     });
 
     res.json(alertsWithEvidence);
 
   } catch (error) {
-    console.log("❌ Alert fetch error:", error);
+    console.log("Alert fetch error:", error);
     res.status(500).json({
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -158,16 +147,15 @@ export const getActiveAlerts = async (req, res) => {
 
 export const getUserAlerts = async (req, res) => {
   try {
-
     const alerts = await Alert.find({
-      userId: req.user._id
+      userId: req.user._id,
     }).sort({ createdAt: -1 });
 
     res.json(alerts);
 
   } catch (error) {
     res.status(500).json({
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -179,12 +167,11 @@ export const getUserAlerts = async (req, res) => {
 
 export const resolveAlert = async (req, res) => {
   try {
-
     const alert = await Alert.findById(req.params.id);
 
     if (!alert) {
       return res.status(404).json({
-        message: "Alert not found"
+        message: "Alert not found",
       });
     }
 
@@ -194,18 +181,18 @@ export const resolveAlert = async (req, res) => {
     if (io) {
       io.emit("alertResolved", {
         _id: alert._id,
-        status: "RESOLVED"
+        status: "RESOLVED",
       });
     }
 
     res.json({
       message: "Alert resolved",
-      alert
+      alert,
     });
 
   } catch (error) {
     res.status(500).json({
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -215,16 +202,17 @@ export const resolveAlert = async (req, res) => {
 // GET ALL ALERTS (Police)
 // ===============================
 
-export const getAllAlerts = async (req,res)=>{
-try{
+export const getAllAlerts = async (req, res) => {
+  try {
+    const alerts = await Alert.find()
+      .populate("userId", "name phone email")
+      .sort({ createdAt: -1 });
 
-const alerts = await Alert.find()
-.populate("userId","name phone email")
-.sort({createdAt:-1});
+    res.json(alerts);
 
-res.json(alerts);
-
-}catch(error){
-res.status(500).json({message:error.message});
-}
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
